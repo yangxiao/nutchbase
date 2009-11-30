@@ -17,7 +17,7 @@ import org.apache.nutch.parse.Outlink;
 import org.apache.nutch.parse.ParseStatus;
 import org.apache.nutch.protocol.ProtocolStatus;
 
-public class WebTableRow extends TableRow {
+public class WebTableRow extends HbaseRow {
   public WebTableRow() { // do not use!
     super();
   }

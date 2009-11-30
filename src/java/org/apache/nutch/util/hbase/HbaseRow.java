@@ -13,7 +13,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Writable;
 
-class TableRow implements Writable {
+class HbaseRow implements Writable {
   
   private static Comparator<Long> TS_COMPARATOR = new Comparator<Long>() {
     public int compare(Long l1, Long l2) {
@@ -31,16 +31,16 @@ class TableRow implements Writable {
   protected final NavigableMap<byte[], NavigableMap<byte[], NavigableMap<Long, ColumnData>>> map =
     new TreeMap<byte[], NavigableMap<byte[], NavigableMap<Long, ColumnData>>>(Bytes.BYTES_COMPARATOR);
 
-  public TableRow() { // do not use!
+  public HbaseRow() { // do not use!
     now = System.currentTimeMillis();
   }
   
-  public TableRow(byte[] row) {
+  public HbaseRow(byte[] row) {
     this();
     this.row = row;
   }
 
-  public TableRow(Result result) {
+  public HbaseRow(Result result) {
     this();
     row = result.getRow();
     for (Entry<byte[], NavigableMap<byte[], NavigableMap<Long, byte[]>>> e1 : result.getMap().entrySet()) {
