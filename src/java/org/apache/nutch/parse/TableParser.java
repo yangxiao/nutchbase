@@ -19,7 +19,6 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.ValueFilter;
 import org.apache.hadoop.hbase.filter.FilterList.Operator;
-import org.apache.hadoop.hbase.filter.ValueFilter.CompareOp;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.IdentityTableReducer;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
@@ -215,11 +214,11 @@ implements Tool {
     Scan scan = TableUtil.createScanFromColumns(columns);
     List<Filter> filters = new ArrayList<Filter>();
     if (!restart) {
-      filters.add(new ValueFilter(WebTableColumns.METADATA, PARSE_MARK,
-          CompareOp.NOT_EQUAL, TableUtil.YES_VAL, false));
+      //filters.add(new ValueFilter(WebTableColumns.METADATA, PARSE_MARK,
+      //    CompareOp.NOT_EQUAL, TableUtil.YES_VAL, false));
     }
-    filters.add(new ValueFilter(WebTableColumns.METADATA, Fetcher.FETCH_MARK,
-        CompareOp.EQUAL, TableUtil.YES_VAL, true));
+    //filters.add(new ValueFilter(WebTableColumns.METADATA, Fetcher.FETCH_MARK,
+    //    CompareOp.EQUAL, TableUtil.YES_VAL, true));
     scan.setFilter(new FilterList(Operator.MUST_PASS_ALL, filters));
     return scan;
   }

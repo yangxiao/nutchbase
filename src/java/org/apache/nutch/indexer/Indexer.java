@@ -16,7 +16,6 @@ import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.ValueFilter;
 import org.apache.hadoop.hbase.filter.FilterList.Operator;
-import org.apache.hadoop.hbase.filter.ValueFilter.CompareOp;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableMapper;
@@ -96,13 +95,13 @@ implements Tool {
     Scan scan = TableUtil.createScanFromColumns(getColumns(job));
     List<Filter> filters = new ArrayList<Filter>();
     if (!reindex) {
-      filters.add(
-          new ValueFilter(WebTableColumns.METADATA, INDEX_MARK,
-              CompareOp.NOT_EQUAL, TableUtil.YES_VAL, false));
+      //filters.add(
+      //    new ValueFilter(WebTableColumns.METADATA, INDEX_MARK,
+      //        CompareOp.NOT_EQUAL, TableUtil.YES_VAL, false));
     }
-    filters.add(
-        new ValueFilter(WebTableColumns.PARSE_STATUS, null,
-                        CompareOp.GREATER_OR_EQUAL, new byte[] { (byte)0 }, true));
+    //filters.add(
+    //    new ValueFilter(WebTableColumns.PARSE_STATUS, null,
+    //                    CompareOp.GREATER_OR_EQUAL, new byte[] { (byte)0 }, true));
     FilterList filterList = new FilterList(Operator.MUST_PASS_ALL, filters);
     scan.setFilter(filterList);
     TableMapReduceUtil.initTableMapperJob(table,

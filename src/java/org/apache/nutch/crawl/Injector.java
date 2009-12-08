@@ -13,7 +13,9 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.ValueFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.filter.SkipFilter;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.IdentityTableReducer;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
@@ -37,9 +39,9 @@ import org.apache.nutch.util.LogUtil;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
-import org.apache.nutch.util.hbase.WebTableColumns;
 import org.apache.nutch.util.hbase.TableUtil;
+import org.apache.nutch.util.hbase.WebTableColumns;
+import org.apache.nutch.util.hbase.WebTableRow;
 
 public class Injector
 implements Tool {
@@ -176,7 +178,9 @@ implements Tool {
     job = new NutchJob(getConf(), "inject-hbase-p2 " + urlDir);
 
     Scan scan = TableUtil.createScanFromColumns(COLUMNS);
-    scan.setFilter(new ValueFilter(WebTableColumns.METADATA, INJECT_KEY, ValueFilter.CompareOp.EQUAL, TableUtil.YES_VAL, true));
+    scan.setFilter(new SkipFilter(
+        new SingleColumnValueFilter(WebTableColumns.METADATA, INJECT_KEY,
+            CompareFilter.CompareOp.EQUAL, TableUtil.YES_VAL)));
     TableMapReduceUtil.initTableMapperJob(table,
         scan, InjectorMapper.class, Text.class, Text.class, job);
     TableMapReduceUtil.initTableReducerJob(table,

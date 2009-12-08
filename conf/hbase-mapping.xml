@@ -1,0 +1,14 @@
+<table name="webtable" class="org.apache.nutch.storage.WebTableRow">
+  <description>
+    <family name="p"/> <!-- This can also have params like compression, bloom filters -->
+    <family name="f"/>
+    <family name="ol"/>
+    <family name="mtdt"/>
+  </description>
+  <fields>
+    <field name="fetchTime" family="f" qualifier="ts"/>
+    <field name="title" family="p" qualifier="t"/>
+    <field name="text" family="p" qualifier="c"/>
+    <field name="status" family="f" qualifier="st"/>
+  </fields>
+</table>

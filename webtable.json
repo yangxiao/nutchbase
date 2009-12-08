@@ -1,0 +1,15 @@
+{"namespace": "org.apache.nutch.storage",
+ "protocol": "Web",
+
+ "types": [
+     {"name": "WebTableRow", "type": "record",
+      "fields": [
+          {"name": "rowKey", "type": "string"},
+          {"name": "fetchTime", "type": "long"},
+          {"name": "title", "type": "string"},
+          {"name": "text", "type": "string"},
+          {"name": "status", "type": "int"}
+      ]
+     }
+ ]
+}
