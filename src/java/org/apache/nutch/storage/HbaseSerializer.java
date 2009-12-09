@@ -2,7 +2,9 @@ package org.apache.nutch.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -14,7 +16,13 @@ import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.util.Utf8;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -27,18 +35,26 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 public class HbaseSerializer<K, R extends NutchTableRow>
-implements NutchSerializer<K, R> {
+implements NutchSerializer<K, R>, Configurable {
+  
+  public static final String PARSE_MAPPING_FILE_KEY = "nutch.hbase.mapping.file"; 
   
   public static final String DEFAULT_FILE_NAME = "hbase-mapping.xml";
   
-  private static final DocumentBuilder docBuilder; 
+  private static final DocumentBuilder docBuilder;
 
   // a map from field name to hbase column
   private Map<String, HbaseColumn> columnMap;
+
+  private List<HColumnDescriptor> colDescs;
+  
+  private String tableName;
   
   private HTable table;
   
   private Class<R> implClass;
+
+  private Configuration conf;
   
   static {
     try {
@@ -53,11 +69,33 @@ implements NutchSerializer<K, R> {
 
   public HbaseSerializer()  {
     columnMap = new HashMap<String, HbaseColumn>();
+    colDescs = new ArrayList<HColumnDescriptor>();
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+    
+  }
+
+  @Override
+  public void setConf(Configuration conf) {
+    this.conf = conf;
     try {
-      parseMapping(DEFAULT_FILE_NAME);
+      parseMapping(conf.get(PARSE_MAPPING_FILE_KEY, DEFAULT_FILE_NAME));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void createTable() throws IOException {
+    HBaseAdmin admin = new HBaseAdmin(new HBaseConfiguration(conf));
+    HTableDescriptor tableDesc = new HTableDescriptor(tableName);
+    for (HColumnDescriptor colDesc : colDescs) {
+      tableDesc.addFamily(colDesc);
+    }
+    admin.createTable(tableDesc);
   }
 
   @Override
@@ -207,7 +245,8 @@ implements NutchSerializer<K, R> {
           continue;
         }
         if (node.getNodeName().equals("table")) {
-          table = new HTable(getAttr(node, "name"));
+          tableName = getAttr(node, "name");
+          table = new HTable(tableName);
           implClass = (Class<R>) Class.forName(getAttr(node, "class"));
         } else if (node.getNodeName().equals("field")) {
           String fieldName = getAttr(node, "name");
@@ -217,6 +256,9 @@ implements NutchSerializer<K, R> {
           byte[] qualifier =
             qualifierStr != null ? Bytes.toBytes(qualifierStr) : null;
           columnMap.put(fieldName, new HbaseColumn(family, qualifier));
+        } else if (node.getNodeName().equals("family")) {
+          String familyName = getAttr(node, "name");
+          colDescs.add(new HColumnDescriptor(familyName));
         }
       }
     } catch (SAXException e) {
