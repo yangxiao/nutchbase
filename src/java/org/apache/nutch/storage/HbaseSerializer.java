@@ -2,10 +2,14 @@ package org.apache.nutch.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +31,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.nutch.storage.NutchHashMap.State;
 import org.apache.nutch.util.NodeWalker;
 import org.apache.nutch.util.NutchConfiguration;
 import org.w3c.dom.Document;
@@ -127,6 +132,7 @@ implements NutchSerializer<K, R>, Configurable {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void writeRow(K key, R row) throws IOException {
     Schema schema = row.getSchema();
@@ -139,36 +145,53 @@ implements NutchSerializer<K, R>, Configurable {
       }
       Object o = row.get(i);
       HbaseColumn hcol = columnMap.get(field.getKey());
-      put.add(hcol.getFamily(), hcol.getQualifier(), toBytes(o));
+      Type type = field.getValue().getType();
+      if (type == Type.MAP) {
+        NutchHashMap map = (NutchHashMap) o;
+        // TODO: Implement deletes
+        Iterator<Entry<Utf8, State>> it = map.states();
+        while (it.hasNext()) {
+          Entry<Utf8, State> e = it.next();
+          if (e.getValue() == State.UPDATED) {
+            Utf8 mapKey = e.getKey();
+            byte[] qual = Bytes.toBytes(mapKey.toString());
+            byte[] val = toBytes(map.get(mapKey), field);
+            put.add(hcol.getFamily(), qual, val);
+          }
+        }
+      } else {
+        put.add(hcol.getFamily(), hcol.getQualifier(), toBytes(o, field));
+      }
       i++;
     }
     table.put(put);
     table.flushCommits();
   }
 
+  @SuppressWarnings("unchecked")
   private R makeNutchTableRow(R row, Result result, String[] fields)
   throws InstantiationException, IllegalAccessException, SecurityException, NoSuchFieldException {
     Schema schema = row.getSchema();
     Map<String, Field> fieldMap = schema.getFields();
     for (String f : fields) {
       HbaseColumn col = columnMap.get(f);
-      /*if (Map.class.isAssignableFrom(clazz)) {
+      Field field = fieldMap.get(f);
+      Schema fieldSchema = field.schema();
+      if (fieldSchema.getType() == Type.MAP) {
         NavigableMap<byte[], byte[]> qualMap =
           result.getNoVersionMap().get(col.getFamily());
-        Map map = (Map) clazz.newInstance();
-        ParameterizedType paramType = (ParameterizedType) field.getGenericType();
-        Class<?> keyClass = (Class<?>) paramType.getActualTypeArguments()[0];
-        Class<?> valueClass = (Class<?>) paramType.getActualTypeArguments()[1];
+        Type valueType = fieldSchema.getValueType().getType();
+        Map map = new HashMap();
         for (Entry<byte[], byte[]> e : qualMap.entrySet()) {
-          map.put(parseAsInstanceOf(keyClass, e.getKey()), 
-              parseAsInstanceOf(valueClass, e.getValue()));
+          map.put(new Utf8(Bytes.toString(e.getKey())), 
+              parseAsInstanceOf(valueType, e.getValue()));
         }
-        setField(row, field.getName(), map);
-      } else {*/
+        setField(row, field, map);
+      } else {
       byte[] val =
          result.getValue(col.getFamily(), col.getQualifier());
-      setField(row, fieldMap.get(f), val);
-      //}
+      setField(row, field, val);
+      }
     }
     row.clearChangedBits();
     return row;
@@ -177,7 +200,7 @@ implements NutchSerializer<K, R>, Configurable {
   private Object parseAsInstanceOf(Type type, byte[] val) {
     switch (type) {
     case STRING:  return new Utf8(Bytes.toString(val));
-    case BYTES:   return val;
+    case BYTES:   return ByteBuffer.wrap(val);
     case INT:     return Bytes.toInt(val);
     case LONG:    return Bytes.toLong(val);
     case FLOAT:   return Bytes.toFloat(val);
@@ -210,14 +233,25 @@ implements NutchSerializer<K, R>, Configurable {
     }
     throw new RuntimeException("Can't parse data as class: " + clazz);
   }
+
+  private byte[] toBytes(Object o, Entry<String, Schema> field) {
+    Type type = field.getValue().getType();
+    switch (type) {
+    case STRING:  return Bytes.toBytes(((Utf8)o).toString()); // TODO: maybe ((Utf8)o).getBytes(); ?
+    case BYTES:   return ((ByteBuffer)o).array();
+    case INT:     return Bytes.toBytes((Integer)o);
+    case LONG:    return Bytes.toBytes((Long)o);
+    case FLOAT:   return Bytes.toBytes((Float)o);
+    case DOUBLE:  return Bytes.toBytes((Double)o);
+    case BOOLEAN: return (Boolean)o ? new byte[] {1} : new byte[] {0};
+    default: throw new RuntimeException("Unknown type: "+type);
+    }
+  }
   
-  /*private void setField(R row, String f, Map map)
-  throws SecurityException, NoSuchFieldException,
-  IllegalArgumentException, IllegalAccessException {
-    Field field = row.getClass().getDeclaredField(f);
-    field.setAccessible(true);
-    field.set(row, map);    
-  }*/
+  @SuppressWarnings("unchecked")
+  private void setField(R row, Field field, Map map) {
+    row.set(field.pos(), new NutchHashMap(map));
+  }
 
   private void setField(R row, Field field, byte[] val) {
     row.set(field.pos(), parseAsInstanceOf(field.schema().getType(), val));
