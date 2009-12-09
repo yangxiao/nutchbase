@@ -2,10 +2,8 @@ package org.apache.nutch.storage;
 
 import java.io.IOException;
 
-import org.apache.hadoop.conf.Configurable;
-
-public interface NutchSerializer<T extends NutchTableRow<K>, K> extends Configurable {
-  public T readRow(String key, String[] fields) throws IOException;
+public interface NutchSerializer<K, R extends NutchTableRow> {
+  public R readRow(K key, String[] fields) throws IOException;
   
-  public void writeRow(T row) throws IOException;
+  public void writeRow(K key, R row) throws IOException;
 }

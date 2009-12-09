@@ -1,12 +1,9 @@
 package org.apache.nutch.storage;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,9 +11,9 @@ import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.util.Utf8;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -29,10 +26,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-public class HbaseSerializer<T extends NutchTableRow<K>, K> extends Configured
-implements NutchSerializer<T, K> {
-
-  public static final String MAPPING_FILE_NAME_KEY = "mapping.hbase.file";
+public class HbaseSerializer<K, R extends NutchTableRow>
+implements NutchSerializer<K, R> {
   
   public static final String DEFAULT_FILE_NAME = "hbase-mapping.xml";
   
@@ -41,19 +36,9 @@ implements NutchSerializer<T, K> {
   // a map from field name to hbase column
   private Map<String, HbaseColumn> columnMap;
   
-  // field name to annotation map
-  private Map<String, RowField> annMap;
-  
-  // a map from field name to its field
-  private Map<String, Field> fieldMap;
-  
-  private String keyVarName; 
-  
-  private Class<?> keyType;
-  
   private HTable table;
   
-  private Class<T> implClass;
+  private Class<R> implClass;
   
   static {
     try {
@@ -66,38 +51,33 @@ implements NutchSerializer<T, K> {
     }
   }
 
-  public HbaseSerializer(Configuration conf)  {
-    super(conf);
+  public HbaseSerializer()  {
     columnMap = new HashMap<String, HbaseColumn>();
-    annMap = new HashMap<String, RowField>();
-    fieldMap = new HashMap<String, Field>();
-    String fileName = conf.get(MAPPING_FILE_NAME_KEY, DEFAULT_FILE_NAME);
     try {
-      parseMapping(fileName);
+      parseMapping(DEFAULT_FILE_NAME);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public T readRow(String key, String[] fields) throws IOException {
-    Get get = new Get(Bytes.toBytes(key));
-    for (String f : fields) {
-      HbaseColumn col = columnMap.get(f);
-      Class<?> clazz = fieldMap.get(f).getType();
-      if (Map.class.isAssignableFrom(clazz)) {
-        // A map is serialized so that a key => value
-        // mapping is represented with family:key => value.
-        // So, to read a map, a column family is read with
-        // all qualifiers
-        get.addFamily(col.getFamily());
-      } else {
-        get.addColumn(col.getFamily(), col.getQualifier());
-      }
-    }
-    Result result = table.get(get);
+  public R readRow(K key, String[] fields) throws IOException {
     try {
-      return makeNutchTableRow(result, fields);
+      Get get = new Get(toBytes(key));
+      R row = implClass.newInstance();
+      Schema schema = row.getSchema();
+      Map<String, Field> fieldMap = schema.getFields();
+      for (String f : fields) {
+        HbaseColumn col = columnMap.get(f);
+        Schema fieldSchema = fieldMap.get(f).schema();
+        if (fieldSchema.getType() == Type.MAP) {
+          get.addFamily(col.family);
+        } else {
+          get.addColumn(col.family, col.qualifier);
+        }
+      }
+      Result result = table.get(get);
+      return makeNutchTableRow(row, result, fields);
     } catch (InstantiationException e) {
       throw new RuntimeException(e);
     } catch (IllegalAccessException e) {
@@ -110,21 +90,16 @@ implements NutchSerializer<T, K> {
   }
 
   @Override
-  public void writeRow(T row) throws IOException {
+  public void writeRow(K key, R row) throws IOException {
     Schema schema = row.getSchema();
     int i = 0;
-    Put put = new Put(toBytes(row.getRowKey()));
+    Put put = new Put(toBytes(key));
     for (Map.Entry<String, Schema> field : schema.getFieldSchemas()) {
       if (!row.isFieldChanged(i)) {
-        System.out.println(field.getKey() + " is not changed, continuing");
         i++;
         continue;
       }
-      if (field.getKey().equals("rowKey")) {
-        throw new RuntimeException("Can't handle row key changes for now");
-      }
       Object o = row.get(i);
-      System.out.println("Writing " + o + " for field:" + field.getKey());
       HbaseColumn hcol = columnMap.get(field.getKey());
       put.add(hcol.getFamily(), hcol.getQualifier(), toBytes(o));
       i++;
@@ -133,17 +108,13 @@ implements NutchSerializer<T, K> {
     table.flushCommits();
   }
 
-  @SuppressWarnings("unchecked")
-  private T makeNutchTableRow(Result result, String[] fields)
+  private R makeNutchTableRow(R row, Result result, String[] fields)
   throws InstantiationException, IllegalAccessException, SecurityException, NoSuchFieldException {
-    T row = implClass.newInstance();
-    byte[] rowKeyRaw = result.getRow();
-    setField(row, keyVarName, keyType, rowKeyRaw);
+    Schema schema = row.getSchema();
+    Map<String, Field> fieldMap = schema.getFields();
     for (String f : fields) {
-      Field field = fieldMap.get(f);
-      Class<?> clazz = field.getType();
       HbaseColumn col = columnMap.get(f);
-      if (Map.class.isAssignableFrom(clazz)) {
+      /*if (Map.class.isAssignableFrom(clazz)) {
         NavigableMap<byte[], byte[]> qualMap =
           result.getNoVersionMap().get(col.getFamily());
         Map map = (Map) clazz.newInstance();
@@ -155,36 +126,26 @@ implements NutchSerializer<T, K> {
               parseAsInstanceOf(valueClass, e.getValue()));
         }
         setField(row, field.getName(), map);
-      } else {
-        byte[] val =
-          result.getValue(col.getFamily(), col.getQualifier());
-        setField(row, field.getName(), clazz, val);
-      }
+      } else {*/
+      byte[] val =
+         result.getValue(col.getFamily(), col.getQualifier());
+      setField(row, fieldMap.get(f), val);
+      //}
     }
     return row;
   }
 
-  private Object parseAsInstanceOf(Class<?> clazz, byte[] val) {
-    if (clazz.equals(Byte.TYPE)) {
-      return val[0];
-    } else if (clazz.equals(Boolean.TYPE)) {
-      return val[0] == 0 ? false : true;
-    } else if (clazz.equals(Short.TYPE)) {
-      return Bytes.toShort(val);
-    } else if (clazz.equals(Integer.TYPE)) {
-      return Bytes.toInt(val);
-    } else if (clazz.equals(Long.TYPE)) {
-      return Bytes.toLong(val);
-    } else if (clazz.equals(Float.TYPE)) {
-      return Bytes.toFloat(val);
-    } else if (clazz.equals(Double.TYPE)) {
-      return Bytes.toDouble(val);
-    } else if (clazz.equals(String.class)) {
-      return Bytes.toString(val);
-    } else if (clazz.equals(Utf8.class)) {
-      return new Utf8(Bytes.toString(val));
+  private Object parseAsInstanceOf(Type type, byte[] val) {
+    switch (type) {
+    case STRING:  return new Utf8(Bytes.toString(val));
+    case BYTES:   return val;
+    case INT:     return Bytes.toInt(val);
+    case LONG:    return Bytes.toLong(val);
+    case FLOAT:   return Bytes.toFloat(val);
+    case DOUBLE:  return Bytes.toDouble(val);
+    case BOOLEAN: return val[0] != 0;
+    default: throw new RuntimeException("Unknown type: "+type);
     }
-    throw new RuntimeException("Can't parse data as class: " + clazz);
   }
   
   private byte[] toBytes(Object o) {
@@ -211,21 +172,16 @@ implements NutchSerializer<T, K> {
     throw new RuntimeException("Can't parse data as class: " + clazz);
   }
   
-  @SuppressWarnings("unchecked")
-  private void setField(T row, String f, Map map)
+  /*private void setField(R row, String f, Map map)
   throws SecurityException, NoSuchFieldException,
   IllegalArgumentException, IllegalAccessException {
     Field field = row.getClass().getDeclaredField(f);
     field.setAccessible(true);
     field.set(row, map);    
-  }
+  }*/
 
-  private void setField(T row, String f, Class<?> clazz, byte[] val)
-  throws SecurityException, NoSuchFieldException,
-  IllegalArgumentException, IllegalAccessException {
-    Field field = row.getClass().getDeclaredField(f);
-    field.setAccessible(true);
-    field.set(row, parseAsInstanceOf(clazz, val));
+  private void setField(R row, Field field, byte[] val) {
+    row.set(field.pos(), parseAsInstanceOf(field.schema().getType(), val));
   }
 
   private static String getAttr(Node node, String attr) {
@@ -237,32 +193,13 @@ implements NutchSerializer<T, K> {
     return itemNode.getNodeValue();
   }
   
-  private void extractFieldTypes() {
-    for (Field f : implClass.getDeclaredFields()) {
-      RowKey rowKey = f.getAnnotation(RowKey.class);
-      if (rowKey != null) {
-        keyVarName = f.getName();
-        keyType = f.getType();
-        continue;
-      }
-      RowField nutchField = f.getAnnotation(RowField.class);
-      if (nutchField == null) {
-        continue;
-      }
-      String fieldName = nutchField.name();
-      if (fieldName.equals("")) {
-        fieldName = f.getName();
-      }
-      fieldMap.put(fieldName, f);
-      annMap.put(fieldName, nutchField);
-    }
-  }
-  
   @SuppressWarnings("unchecked")
   private void parseMapping(String fileName)
   throws ClassNotFoundException {
     try {
-      Document doc = docBuilder.parse(getConf().getConfResourceAsInputStream(fileName));
+      InputStream stream =
+        HbaseSerializer.class.getClassLoader().getResourceAsStream(fileName);
+      Document doc = docBuilder.parse(stream);
       NodeWalker walker = new NodeWalker(doc.getFirstChild());
       while (walker.hasNext()) {
         Node node = walker.nextNode();
@@ -271,8 +208,7 @@ implements NutchSerializer<T, K> {
         }
         if (node.getNodeName().equals("table")) {
           table = new HTable(getAttr(node, "name"));
-          implClass = (Class<T>) Class.forName(getAttr(node, "class"));
-          extractFieldTypes();
+          implClass = (Class<R>) Class.forName(getAttr(node, "class"));
         } else if (node.getNodeName().equals("field")) {
           String fieldName = getAttr(node, "name");
           String familyStr = getAttr(node, "family");
@@ -291,10 +227,10 @@ implements NutchSerializer<T, K> {
   }
   
   public static void main(String[] args) throws Exception {
-    HbaseSerializer<WebTableRow, Utf8> hs = new HbaseSerializer<WebTableRow, Utf8>(NutchConfiguration.create());
+    NutchSerializer<String, WebTableRow> hs =
+      NutchSerializerFactory.create(NutchConfiguration.create());
     WebTableRow row = hs.readRow("http://com.google/", new String[] { "fetchTime", "title", "text", "status" });
     System.out.println(row.getFetchTime());
-    System.out.println(row.getRowKey());
     System.out.println(row.getText());
     System.out.println(row.getTitle());
     System.out.println(row.getStatus());

@@ -4,7 +4,6 @@
  "types": [
      {"name": "WebTableRow", "type": "record",
       "fields": [
-          {"name": "rowKey", "type": "string"},
           {"name": "fetchTime", "type": "long"},
           {"name": "title", "type": "string"},
           {"name": "text", "type": "string"},

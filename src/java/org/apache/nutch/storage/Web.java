@@ -14,8 +14,6 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.avro.specific.SpecificFixed;
 import org.apache.avro.reflect.FixedSize;
-import org.apache.nutch.storage.RowKey;
-import org.apache.nutch.storage.RowField;
 
 @SuppressWarnings("all")
 public interface Web {

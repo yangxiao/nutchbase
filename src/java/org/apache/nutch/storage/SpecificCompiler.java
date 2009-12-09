@@ -152,8 +152,6 @@ public class SpecificCompiler {
     line(0, "import org.apache.avro.specific.SpecificRecord;");
     line(0, "import org.apache.avro.specific.SpecificFixed;");
     line(0, "import org.apache.avro.reflect.FixedSize;");
-    line(0, "import org.apache.nutch.storage.RowKey;");
-    line(0, "import org.apache.nutch.storage.RowField;");
     for (Schema s : queue)
       if (namespace == null
           ? (s.getNamespace() != null)
@@ -191,24 +189,13 @@ public class SpecificCompiler {
     try {
       switch (schema.getType()) {
       case RECORD:
-        String rowKeyType = null;
-        for (Map.Entry<String, Schema> field : schema.getFieldSchemas()) {
-          if (field.getKey().equals("rowKey")) {
-            rowKeyType = type(field.getValue());
-          }
-        }
         line(0, "public class "+type(schema)
-             +" extends NutchTableRow< " + rowKeyType + "> implements SpecificRecord {");
+             +" extends NutchTableRow implements SpecificRecord {");
         // schema definition
         line(1, "public static final Schema _SCHEMA = Schema.parse(\""
              +esc(schema)+"\");");
         // field declations
         for (Map.Entry<String, Schema> field : schema.getFieldSchemas()) {
-          if (field.getKey().equals("rowKey")) {
-            line(1, "@RowKey");
-          } else {
-            line(1, "@RowField");
-          }
           line(1,"private "+unbox(field.getValue())+" "+field.getKey()+";");
         }
         // schema method
@@ -277,7 +264,7 @@ public class SpecificCompiler {
 
   private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
 
-  private String type(Schema schema) {
+  public static String type(Schema schema) {
     switch (schema.getType()) {
     case RECORD:
     case ENUM:
@@ -304,7 +291,7 @@ public class SpecificCompiler {
     }
   }
 
-  private String unbox(Schema schema) {
+  public static String unbox(Schema schema) {
     switch (schema.getType()) {
     case INT:     return "int";
     case LONG:    return "long";
