@@ -24,6 +24,9 @@ public class WebTableRow extends NutchTableRow implements SpecificRecord {
   private int status;
   public Schema getSchema() { return _SCHEMA; }
   public Object get(int _field) {
+    if (!isFieldReadable(_field)) {
+      throw new AvroRuntimeException("Attempting to access a non-readable field");
+    }
     switch (_field) {
     case 0: return fetchTime;
     case 1: return title;

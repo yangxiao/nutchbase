@@ -170,6 +170,7 @@ implements NutchSerializer<K, R>, Configurable {
       setField(row, fieldMap.get(f), val);
       //}
     }
+    row.clearChangedBits();
     return row;
   }
 

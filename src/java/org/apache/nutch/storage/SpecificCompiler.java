@@ -202,6 +202,9 @@ public class SpecificCompiler {
         line(1, "public Schema getSchema() { return _SCHEMA; }");
         // get method
         line(1, "public Object get(int _field) {");
+        line(2, "if (!isFieldReadable(_field)) {");
+        line(3, "throw new AvroRuntimeException(\"Attempting to access a non-readable field\");");
+        line(2, "}");
         line(2, "switch (_field) {");
         int i = 0;
         for (Map.Entry<String, Schema> field : schema.getFieldSchemas())
