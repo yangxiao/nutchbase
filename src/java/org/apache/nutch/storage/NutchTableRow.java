@@ -23,7 +23,7 @@ public abstract class NutchTableRow extends SpecificRecordBase {
   }
 
   public boolean isFieldReadable(int fieldNum) {
-    return readBits.get(fieldNum);
+    return readBits.get(fieldNum) || changedBits.get(fieldNum);
   }
   
   /* package */ void clearChangedBits() {

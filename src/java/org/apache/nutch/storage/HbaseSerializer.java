@@ -304,13 +304,13 @@ implements NutchSerializer<K, R>, Configurable {
   }
   
   public static void main(String[] args) throws Exception {
-    NutchSerializer<String, WebTableRow> hs =
+    /*NutchSerializer<String, WebTableRow> hs =
       NutchSerializerFactory.create(NutchConfiguration.create());
     WebTableRow row = hs.readRow("http://com.google/", new String[] { "fetchTime", "title", "text", "status" });
     System.out.println(row.getFetchTime());
     System.out.println(row.getText());
     System.out.println(row.getTitle());
-    System.out.println(row.getStatus());
+    System.out.println(row.getStatus());*/
     //row.setRowKey(new Utf8("baska"));
     //row.setStatus(row.getStatus() + 1);
     //row.setTitle(new Utf8("Title updated!"));

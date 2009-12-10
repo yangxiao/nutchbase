@@ -21,6 +21,9 @@ public class NutchHashMap<K, V> extends HashMap<K, V> {
   public NutchHashMap(Map<K, V> m) {
     super();
     super.putAll(m);
+    for (K key : m.keySet()) {
+      keyStates.put(key, State.NOT_UPDATED);
+    }
   }
   
   @Override
