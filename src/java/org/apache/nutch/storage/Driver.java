@@ -1,17 +1,11 @@
 package org.apache.nutch.storage;
 
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.nutch.util.NutchConfiguration;
 
 public class Driver {
 
   public static void main(String[] args) throws Exception {
-    HBaseAdmin admin  = new HBaseAdmin(new HBaseConfiguration());
+    /*HBaseAdmin admin  = new HBaseAdmin(new HBaseConfiguration());
     HTableDescriptor tableDesc = new HTableDescriptor("webtable");
     tableDesc.addFamily(new HColumnDescriptor("p"));
     tableDesc.addFamily(new HColumnDescriptor("f"));
@@ -28,6 +22,9 @@ public class Driver {
     put.add(Bytes.toBytes("p"), Bytes.toBytes("c"), Bytes.toBytes("This is the content"));
 
     table.put(put);
-    table.close();
+    table.close();*/
+    NutchSerializer<String, WebTableRow> serializer =
+      NutchSerializerFactory.create(NutchConfiguration.create());
+    serializer.createTable();
   }
 }

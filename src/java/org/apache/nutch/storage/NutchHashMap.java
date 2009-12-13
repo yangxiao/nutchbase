@@ -20,6 +20,9 @@ public class NutchHashMap<K, V> extends HashMap<K, V> {
   
   public NutchHashMap(Map<K, V> m) {
     super();
+    if (m == null) {
+      return;
+    }
     super.putAll(m);
     for (K key : m.keySet()) {
       keyStates.put(key, State.NOT_UPDATED);
@@ -28,9 +31,7 @@ public class NutchHashMap<K, V> extends HashMap<K, V> {
   
   @Override
   public V put(K key, V value) {
-    if (keyStates.containsKey(key)) {
-      keyStates.put(key, State.UPDATED);
-    }
+    keyStates.put(key, State.UPDATED);
     return super.put(key, value);
   }
 

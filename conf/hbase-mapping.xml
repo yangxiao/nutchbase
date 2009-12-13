@@ -1,4 +1,4 @@
-<table name="webtable" class="org.apache.nutch.storage.WebTableRow">
+<table name="webtable" keyClass="java.lang.String" rowClass="org.apache.nutch.storage.WebTableRow">
   <description>
     <family name="p"/> <!-- This can also have params like compression, bloom filters -->
     <family name="f"/>
@@ -10,5 +10,7 @@
     <field name="title" family="p" qualifier="t"/>
     <field name="text" family="p" qualifier="c"/>
     <field name="status" family="f" qualifier="st"/>
+    <field name="outlinks" family="ol" />
+    <field name="metadata" family="mtdt" />
   </fields>
 </table>

@@ -1,4 +1,4 @@
-package org.apache.nutch.storage;
+package org.apache.nutch.storage.hbase;
 
 import java.util.Arrays;
 

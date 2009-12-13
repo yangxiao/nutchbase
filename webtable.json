@@ -7,7 +7,9 @@
           {"name": "fetchTime", "type": "long"},
           {"name": "title", "type": "string"},
           {"name": "text", "type": "string"},
-          {"name": "status", "type": "int"}
+          {"name": "status", "type": "int"},
+          {"name": "outlinks", "type": {"type": "map", "values": "string"}},
+          {"name": "metadata", "type": {"type": "map", "values": "bytes"}}
       ]
      }
  ]

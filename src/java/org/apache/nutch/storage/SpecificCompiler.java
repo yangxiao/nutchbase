@@ -202,9 +202,9 @@ public class SpecificCompiler {
         line(1, "public Schema getSchema() { return _SCHEMA; }");
         // get method
         line(1, "public Object get(int _field) {");
-        line(2, "if (!isFieldReadable(_field)) {");
-        line(3, "throw new AvroRuntimeException(\"Attempting to access a non-readable field\");");
-        line(2, "}");
+        //line(2, "if (!isFieldReadable(_field)) {");
+        //line(3, "throw new AvroRuntimeException(\"Attempting to access a non-readable field\");");
+        //line(2, "}");
         line(2, "switch (_field) {");
         int i = 0;
         for (Map.Entry<String, Schema> field : schema.getFieldSchemas())
@@ -215,10 +215,11 @@ public class SpecificCompiler {
         // set method
         line(1, "@SuppressWarnings(value=\"unchecked\")");
         line(1, "public void set(int _field, Object _value) {");
+        line(2, "setFieldChanged(_field);");
         line(2, "switch (_field) {");
         i = 0;
         for (Map.Entry<String, Schema> field : schema.getFieldSchemas()) {
-          line(2, "case "+i+": setFieldChanged("+i+");"+field.getKey()+" = ("+
+          line(2, "case "+i+":"+field.getKey()+" = ("+
                type(field.getValue())+")_value; break;");
           i++;
         }
