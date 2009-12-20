@@ -42,6 +42,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.nutch.storage.NutchHashMap;
 import org.apache.nutch.storage.NutchSerializer;
 import org.apache.nutch.storage.NutchTableRow;
+import org.apache.nutch.storage.NutchTableRowInternal;
 import org.apache.nutch.storage.RowScanner;
 import org.apache.nutch.storage.NutchHashMap.State;
 import org.apache.nutch.util.NodeWalker;
@@ -188,17 +189,15 @@ implements NutchSerializer<K, R>, Configurable {
       schema.getFieldSchemas().iterator();
     for (int i = 0; iter.hasNext(); i++) {
       Entry<String, Schema> field = iter.next();
-      if (!row.isFieldChanged(i)) {
+      if (!((NutchTableRowInternal)row).isFieldChanged(i)) {
         continue;
       }
       Type type = field.getValue().getType();
       Object o = row.get(i);
       HbaseColumn hcol = columnMap.get(field.getKey());
       if (type == Type.MAP) {
-        NutchHashMap map = (NutchHashMap) o;
-        Iterator<Entry<Utf8, State>> it = map.states();
-        while (it.hasNext()) {
-          Entry<Utf8, State> e = it.next();
+        NutchHashMap<Utf8, ?> map = (NutchHashMap<Utf8, ?>) o;
+        for (Entry<Utf8, State> e : map.states().entrySet()) {
           Utf8 mapKey = e.getKey();
           switch (e.getValue()) {
           case UPDATED:
@@ -370,7 +369,7 @@ implements NutchSerializer<K, R>, Configurable {
         setField(row, field, val);
       }
     }
-    row.clearChangedBits();
+    ((NutchTableRowInternal)row).clearChangedBits();
     return row;
   }
 

@@ -152,6 +152,8 @@ public class SpecificCompiler {
     line(0, "import org.apache.avro.specific.SpecificRecord;");
     line(0, "import org.apache.avro.specific.SpecificFixed;");
     line(0, "import org.apache.avro.reflect.FixedSize;");
+    line(0, "import org.apache.nutch.storage.NutchTableRow;");
+    line(0, "import org.apache.nutch.storage.NutchTableRowInternal;");
     line(0, "import org.apache.nutch.storage.NutchHashMap;");
     for (Schema s : queue)
       if (namespace == null
@@ -191,7 +193,7 @@ public class SpecificCompiler {
       switch (schema.getType()) {
       case RECORD:
         line(0, "public class "+type(schema)
-             +" extends NutchTableRow implements SpecificRecord {");
+             +" extends NutchTableRowInternal implements SpecificRecord {");
         // schema definition
         line(1, "public static final Schema _SCHEMA = Schema.parse(\""
              +esc(schema)+"\");");

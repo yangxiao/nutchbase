@@ -15,8 +15,7 @@ implements Serialization<NutchTableRow> {
 
   @Override
   public Deserializer<NutchTableRow> getDeserializer(Class<NutchTableRow> c) {
-    // TODO Auto-generated method stub
-    return null;
+    return new NutchTableRowDeserializer();
   }
 
   @Override

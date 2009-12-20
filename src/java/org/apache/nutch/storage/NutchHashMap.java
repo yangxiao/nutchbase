@@ -1,13 +1,11 @@
 package org.apache.nutch.storage;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+@SuppressWarnings("serial")
 public class NutchHashMap<K, V> extends HashMap<K, V> {
-
-  private static final long serialVersionUID = 4631273931677167192L;
   
   public static enum State {
     NOT_UPDATED, UPDATED, DELETED
@@ -28,9 +26,6 @@ public class NutchHashMap<K, V> extends HashMap<K, V> {
       return;
     }
     super.putAll(m);
-    for (K key : m.keySet()) {
-      keyStates.put(key, State.NOT_UPDATED);
-    }
   }
   
   @Override
@@ -55,7 +50,23 @@ public class NutchHashMap<K, V> extends HashMap<K, V> {
     }
   }
 
-  public Iterator<Entry<K, State>> states() {
-    return keyStates.entrySet().iterator();
+  @Override
+  public void clear() {
+    for (Entry<K, V> e : entrySet()) {
+      keyStates.put(e.getKey(), State.DELETED);
+    }
+    super.clear();
+  }
+
+  public void resetStates() {
+    keyStates.clear();
+  }
+
+  public void putState(K key, State state) {
+    keyStates.put(key, state);
+  }
+
+  public Map<K, State> states() {
+    return keyStates;
   }
 }
