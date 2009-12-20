@@ -34,7 +34,7 @@ import org.apache.nutch.net.protocols.Response;
 import org.apache.nutch.protocol.Content;
 import org.apache.nutch.util.LogUtil;
 import org.apache.nutch.util.NutchConfiguration;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -171,7 +171,7 @@ public class EncodingDetector {
       filter);
   }
   
-  public void autoDetectClues(WebTableRow row, boolean filter) {
+  public void autoDetectClues(OldWebTableRow row, boolean filter) {
     autoDetectClues(row.getContent(), row.getContentType(),
         parseCharacterEncoding(row.getHeader(Response.CONTENT_TYPE)), filter);
   }
@@ -245,7 +245,7 @@ public class EncodingDetector {
    *
    * @return Guessed encoding or defaultValue
    */
-  public String guessEncoding(WebTableRow row, String defaultValue) {
+  public String guessEncoding(OldWebTableRow row, String defaultValue) {
     return guessEncoding(row.getBaseUrl(), defaultValue);
   }
   

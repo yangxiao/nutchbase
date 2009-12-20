@@ -30,7 +30,7 @@ import org.apache.hadoop.io.MD5Hash;
 import org.apache.nutch.parse.Parse;
 import org.apache.nutch.util.hbase.HbaseColumn;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * <p>An implementation of a page signature. It calculates an MD5 hash
@@ -67,7 +67,7 @@ public class TextProfileSignature extends Signature {
   
   Signature fallback = new MD5Signature();
 
-  public byte[] calculate(WebTableRow row, Parse parse) {
+  public byte[] calculate(OldWebTableRow row, Parse parse) {
     int MIN_TOKEN_LEN = getConf().getInt("db.signature.text_profile.min_token_len", 2);
     float QUANT_RATE = getConf().getFloat("db.signature.text_profile.quant_rate", 0.01f);
     HashMap<String, Token> tokens = new HashMap<String, Token>();

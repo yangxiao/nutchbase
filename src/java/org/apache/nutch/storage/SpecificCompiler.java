@@ -152,6 +152,7 @@ public class SpecificCompiler {
     line(0, "import org.apache.avro.specific.SpecificRecord;");
     line(0, "import org.apache.avro.specific.SpecificFixed;");
     line(0, "import org.apache.avro.reflect.FixedSize;");
+    line(0, "import org.apache.nutch.storage.NutchHashMap;");
     for (Schema s : queue)
       if (namespace == null
           ? (s.getNamespace() != null)
@@ -202,9 +203,6 @@ public class SpecificCompiler {
         line(1, "public Schema getSchema() { return _SCHEMA; }");
         // get method
         line(1, "public Object get(int _field) {");
-        //line(2, "if (!isFieldReadable(_field)) {");
-        //line(3, "throw new AvroRuntimeException(\"Attempting to access a non-readable field\");");
-        //line(2, "}");
         line(2, "switch (_field) {");
         int i = 0;
         for (Map.Entry<String, Schema> field : schema.getFieldSchemas())
@@ -226,18 +224,57 @@ public class SpecificCompiler {
         line(2, "default: throw new AvroRuntimeException(\"Bad index\");");
         line(2, "}");
         line(1, "}");
+        // java bean style getters and setters
         i = 0;
         for (Map.Entry<String, Schema> field : schema.getFieldSchemas()) {
-            String unboxed = unbox(field.getValue());
-            String camelKey = camelCasify(field.getKey());
-            line(1, "public "+unboxed+" get" +camelKey+ "() {");
-            line(2, "return ("+type(field.getValue()) + ") get(" + i + ");");
+          String camelKey = camelCasify(field.getKey());
+          Schema fieldSchema = field.getValue();
+          switch (fieldSchema.getType()) {
+          case INT:case LONG:case FLOAT:case DOUBLE:case BOOLEAN:case BYTES:
+            String unboxed = unbox(fieldSchema);
+            line(1, "public "+unboxed+" get" +camelKey+"() {");
+            line(2, "return ("+type(field.getValue())+") get("+i+");");
             line(1, "}");
-            line(1, "public void set"+camelKey+ "(" + unboxed + " value) {");
-            line(2, "set(" + i + ", value);");
+            line(1, "public void set"+camelKey+"("+unboxed+" value) {");
+            line(2, "set("+i+", value);");
             line(1, "}");
-            i++;
+            break;
+          case ARRAY:
+            String valueType = type(fieldSchema.getValueType());
+            unboxed = unbox(fieldSchema.getValueType());
+            break;
+          case MAP:
+            valueType = type(fieldSchema.getValueType());
+            unboxed = unbox(fieldSchema.getValueType());
+            line(1, "public "+unboxed+" getFrom"+camelKey+"(Utf8 key) {");
+            line(2, "if ("+field.getKey()+" == null) { return null; }");
+            line(2, "return "+field.getKey()+".get(key);");
+            line(1, "}");
+            line(1, "public void putTo"+camelKey+"(Utf8 key, "+unboxed+" value) {");
+            line(2, "if ("+field.getKey()+" == null) {");
+            line(3, field.getKey()+" = new NutchHashMap<Utf8,"+valueType+">();");
+            line(2, "}");
+            line(2, "setFieldChanged("+i+");");
+            line(2, field.getKey()+".put(key, value);");
+            line(1, "}");
+            line(1, "public "+unboxed+" removeFrom"+camelKey+"(Utf8 key) {");
+            line(2, "if ("+field.getKey()+" == null) { return null; }");
+            line(2, "setFieldChanged("+i+");");
+            line(2, "return "+field.getKey()+".remove(key);");
+            line(1, "}");
+          }
+          i++;
         }
+        // has(field) implementation
+        line(1, " // O(n)... TODO: Find a better implementation");
+        line(1, "public boolean has(String fieldName) {");
+        line(2, "int i = 0;");
+        line(2, "for (Map.Entry<String, Schema> field : getSchema().getFieldSchemas()) {");
+        line(3, "if (field.getKey().equals(fieldName)) { return isFieldReadable(i); }");
+        line(3, "i++;");
+        line(2, "}");
+        line(2, "throw new AvroRuntimeException(\"No Such field\");");
+        line(1, "}");
         line(0, "}");
         break;
       case ENUM:

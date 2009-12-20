@@ -14,15 +14,15 @@ public enum Mark {
   }
 
   public void putMark(WebTableRow row, byte[] markValue) {
-    row.getMetadata().put(name, ByteBuffer.wrap(markValue));
+    row.putToMetadata(name, ByteBuffer.wrap(markValue));
   }
 
   public void removeMark(WebTableRow row) {
-    row.getMetadata().remove(name);
+    row.removeFromMetadata(name);
   }
 
   public byte[] checkMark(WebTableRow row) {
-    ByteBuffer buffer = row.getMetadata().get(name);
+    ByteBuffer buffer = row.getFromMetadata(name);
     if (buffer == null) { return null; }
     return buffer.array();
   }

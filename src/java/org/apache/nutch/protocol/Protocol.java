@@ -25,8 +25,8 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.nutch.plugin.TablePluggable;
 import org.apache.nutch.protocol.ProtocolOutput;
 import org.apache.nutch.protocol.RobotRules;
-import org.apache.nutch.util.hbase.WebTableRow;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /** A retriever of url content.  Implemented by protocol extensions. */
 public interface Protocol extends TablePluggable, Configurable {
@@ -53,7 +53,7 @@ public interface Protocol extends TablePluggable, Configurable {
 
   /** Returns the {@link Content} for a fetchlist entry.
    */
-  ProtocolOutput getProtocolOutput(String url, WebTableRow row);
+  ProtocolOutput getProtocolOutput(String url, OldWebTableRow row);
 
   /**
    * Retrieve robot rules applicable for this url.
@@ -61,5 +61,5 @@ public interface Protocol extends TablePluggable, Configurable {
    * @param row Row
    * @return robot rules (specific for this url or default), never null
    */
-  RobotRules getRobotRules(String url, WebTableRow row);  
+  RobotRules getRobotRules(String url, OldWebTableRow row);  
 }

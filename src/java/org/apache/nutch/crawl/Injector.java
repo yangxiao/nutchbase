@@ -41,7 +41,7 @@ import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.hbase.HbaseColumn;
 import org.apache.nutch.util.hbase.TableUtil;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 public class Injector
 implements Tool {
@@ -134,7 +134,7 @@ implements Tool {
     @Override
     public void map(ImmutableBytesWritable key, Result result, Context context)
     throws IOException {
-      WebTableRow row = new WebTableRow(result);
+      OldWebTableRow row = new OldWebTableRow(result);
       row.deleteMeta(INJECT_KEY);
       if (!row.hasColumn(WebTableColumns.STATUS, null)) {
         String url = TableUtil.unreverseUrl(Bytes.toString(key.get()));

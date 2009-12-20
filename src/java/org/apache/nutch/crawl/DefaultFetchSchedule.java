@@ -17,7 +17,7 @@
 
 package org.apache.nutch.crawl;
 
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * This class implements the default re-fetch schedule. That is, no matter
@@ -30,7 +30,7 @@ import org.apache.nutch.util.hbase.WebTableRow;
 public class DefaultFetchSchedule extends AbstractFetchSchedule {
 
   @Override
-  public void setFetchSchedule(String url, WebTableRow row,
+  public void setFetchSchedule(String url, OldWebTableRow row,
           long prevFetchTime, long prevModifiedTime,
           long fetchTime, long modifiedTime, int state) {
     super.setFetchSchedule(url, row, prevFetchTime, prevModifiedTime,

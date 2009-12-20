@@ -25,9 +25,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.nutch.crawl.FetchSchedule;
+import org.apache.nutch.storage.WebTableRow;
 import org.apache.nutch.util.hbase.HbaseColumn;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * This class provides common methods for implementations of
@@ -85,6 +86,12 @@ implements FetchSchedule {
    * @param url URL of the page.
    * @param row url's row
    */
+  public void initializeSchedule(String url, OldWebTableRow row) {
+    row.setFetchTime(System.currentTimeMillis());
+    row.setFetchInterval(defaultInterval);
+    row.setRetriesSinceFetch(0);
+  }
+
   public void initializeSchedule(String url, WebTableRow row) {
     row.setFetchTime(System.currentTimeMillis());
     row.setFetchInterval(defaultInterval);
@@ -97,7 +104,7 @@ implements FetchSchedule {
    * retry counter - extending classes should call super.setFetchSchedule() to
    * preserve this behavior.
    */
-  public void setFetchSchedule(String url, WebTableRow row,
+  public void setFetchSchedule(String url, OldWebTableRow row,
           long prevFetchTime, long prevModifiedTime,
           long fetchTime, long modifiedTime, int state) {
     row.setRetriesSinceFetch(0);
@@ -115,7 +122,7 @@ implements FetchSchedule {
    * implementations should make sure that it contains at least all
    * information from {@param datum}.
    */
-  public void setPageGoneSchedule(String url, WebTableRow row,
+  public void setPageGoneSchedule(String url, OldWebTableRow row,
           long prevFetchTime, long prevModifiedTime, long fetchTime) {
     // no page is truly GONE ... just increase the interval by 50%
     // and try much later.
@@ -136,7 +143,7 @@ implements FetchSchedule {
    * @param prevModifiedTime previous modified time
    * @param fetchTime current fetch time
    */
-  public void setPageRetrySchedule(String url, WebTableRow row,
+  public void setPageRetrySchedule(String url, OldWebTableRow row,
           long prevFetchTime, long prevModifiedTime, long fetchTime) {
     row.setFetchTime(fetchTime + (long)FetchSchedule.SECONDS_PER_DAY);
     int oldRetries = row.getRetriesSinceFetch();
@@ -147,7 +154,7 @@ implements FetchSchedule {
    * This method return the last fetch time of the CrawlDatum
    * @return the date as a long.
    */
-  public long calculateLastFetchTime(WebTableRow row) {
+  public long calculateLastFetchTime(OldWebTableRow row) {
     return row.getFetchTime() - row.getFetchInterval() * 1000L;
   }
 
@@ -167,7 +174,7 @@ implements FetchSchedule {
    * @return true, if the page should be considered for inclusion in the current
    * fetchlist, otherwise false.
    */
-  public boolean shouldFetch(String url, WebTableRow row, long curTime) {
+  public boolean shouldFetch(String url, OldWebTableRow row, long curTime) {
     // pages are never truly GONE - we have to check them from time to time.
     // pages with too long fetchInterval are adjusted so that they fit within
     // maximum fetchInterval (segment retention period).
@@ -191,7 +198,7 @@ implements FetchSchedule {
    * the fetchTime to now. If false, force refetch whenever the next fetch
    * time is set.
    */
-  public void forceRefetch(String url, WebTableRow row, boolean asap) {
+  public void forceRefetch(String url, OldWebTableRow row, boolean asap) {
     // reduce fetchInterval so that it fits within the max value
     if (row.getFetchInterval() > maxInterval)
       row.setFetchInterval(Math.round(maxInterval * 0.9f));

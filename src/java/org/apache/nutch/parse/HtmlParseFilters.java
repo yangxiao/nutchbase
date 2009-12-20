@@ -25,7 +25,7 @@ import org.apache.nutch.parse.HTMLMetaTags;
 import org.apache.nutch.plugin.*;
 import org.apache.nutch.util.ObjectCache;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.hadoop.conf.Configuration;
 
 import org.w3c.dom.DocumentFragment;
@@ -68,7 +68,7 @@ public class HtmlParseFilters {
     }                  
 
   /** Run all defined filters. */
-  public Parse filter(String url, WebTableRow row, Parse parse,
+  public Parse filter(String url, OldWebTableRow row, Parse parse,
                            HTMLMetaTags metaTags, DocumentFragment doc) {
 
     // loop on each filter

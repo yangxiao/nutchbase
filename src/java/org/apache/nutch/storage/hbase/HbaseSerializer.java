@@ -179,24 +179,23 @@ implements NutchSerializer<K, R>, Configurable {
   @Override
   public void updateRow(K key, R row) throws IOException {
     Schema schema = row.getSchema();
-    int i = 0;
     byte[] keyRaw = toBytes(key);
     Put put = new Put(keyRaw);
     Delete delete = new Delete(keyRaw);
     boolean hasPuts = false;
     boolean hasDeletes = false;
-    for (Map.Entry<String, Schema> field : schema.getFieldSchemas()) {
-      Type type = field.getValue().getType();
-      Object o = row.get(i);
-      if (o == null || (type != Type.MAP && !row.isFieldChanged(i))) {
-        i++;
+    Iterator<Entry<String, Schema>> iter =
+      schema.getFieldSchemas().iterator();
+    for (int i = 0; iter.hasNext(); i++) {
+      Entry<String, Schema> field = iter.next();
+      if (!row.isFieldChanged(i)) {
         continue;
       }
-      i++;
+      Type type = field.getValue().getType();
+      Object o = row.get(i);
       HbaseColumn hcol = columnMap.get(field.getKey());
       if (type == Type.MAP) {
         NutchHashMap map = (NutchHashMap) o;
-        // TODO: Implement deletes
         Iterator<Entry<Utf8, State>> it = map.states();
         while (it.hasNext()) {
           Entry<Utf8, State> e = it.next();
@@ -352,6 +351,9 @@ implements NutchSerializer<K, R>, Configurable {
       if (fieldSchema.getType() == Type.MAP) {
         NavigableMap<byte[], byte[]> qualMap =
           result.getNoVersionMap().get(col.getFamily());
+        if (qualMap == null) {
+          continue;
+        }
         Type valueType = fieldSchema.getValueType().getType();
         Map map = new HashMap();
         for (Entry<byte[], byte[]> e : qualMap.entrySet()) {
@@ -362,6 +364,9 @@ implements NutchSerializer<K, R>, Configurable {
       } else {
         byte[] val =
           result.getValue(col.getFamily(), col.getQualifier());
+        if (val == null) {
+          continue;
+        }
         setField(row, field, val);
       }
     }

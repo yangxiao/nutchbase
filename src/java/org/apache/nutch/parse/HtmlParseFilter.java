@@ -8,7 +8,7 @@ import org.apache.hadoop.conf.Configurable;
 // Nutch imports
 import org.apache.nutch.parse.HTMLMetaTags;
 import org.apache.nutch.plugin.TablePluggable;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 
 /** Extension point for DOM-based HTML parsers.  Permits one to add additional
@@ -21,7 +21,7 @@ public interface HtmlParseFilter extends TablePluggable, Configurable {
 
   /** Adds metadata or otherwise modifies a parse of HTML content, given
    * the DOM tree of a page. */
-  Parse filter(String url, WebTableRow row, Parse parseResult,
+  Parse filter(String url, OldWebTableRow row, Parse parseResult,
                     HTMLMetaTags metaTags, DocumentFragment doc);
   
 }

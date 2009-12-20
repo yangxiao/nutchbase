@@ -17,7 +17,11 @@ public class NutchHashMap<K, V> extends HashMap<K, V> {
    * idea of managing write/delete info on a per-key basis
    */
   private Map<K, State> keyStates = new HashMap<K, State>();
-  
+
+  public NutchHashMap() {
+    this(null);
+  }
+
   public NutchHashMap(Map<K, V> m) {
     super();
     if (m == null) {

@@ -5,8 +5,9 @@ import java.util.List;
 
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.nutch.plugin.Pluggable;
 
-public interface NutchSerializer<K, R extends NutchTableRow> {
+public interface NutchSerializer<K, R extends NutchTableRow> extends Pluggable {
   public void createTable() throws IOException;
 
   public R makeRow() throws IOException;

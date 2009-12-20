@@ -14,11 +14,11 @@ import org.apache.nutch.indexer.NutchDocument;
 import org.apache.nutch.scoring.ScoringFilterException;
 import org.apache.nutch.scoring.ScoringFilters;
 import org.apache.nutch.util.StringUtil;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.TableUtil;
 
 public class IndexerReducer
-extends Reducer<ImmutableBytesWritable, WebTableRow, ImmutableBytesWritable, NutchDocument> {
+extends Reducer<ImmutableBytesWritable, OldWebTableRow, ImmutableBytesWritable, NutchDocument> {
 
   public static final Log LOG = Indexer.LOG;
   
@@ -37,9 +37,9 @@ extends Reducer<ImmutableBytesWritable, WebTableRow, ImmutableBytesWritable, Nut
   }
   
   @Override
-  protected void reduce(ImmutableBytesWritable key, Iterable<WebTableRow> values,
+  protected void reduce(ImmutableBytesWritable key, Iterable<OldWebTableRow> values,
       Context context) throws IOException, InterruptedException {
-    WebTableRow row = values.iterator().next();
+    OldWebTableRow row = values.iterator().next();
     NutchDocument doc = new NutchDocument();
 
     doc.add("id", Bytes.toString(key.get()));

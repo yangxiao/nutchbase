@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.nutch.indexer.NutchDocument;
 import org.apache.nutch.plugin.TablePluggable;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * A contract defining behavior of scoring plugins.
@@ -46,7 +46,7 @@ public interface ScoringFilter extends Configurable, TablePluggable {
    * @param row new row. Filters will modify it in-place.
    * @throws ScoringFilterException
    */
-  public void injectedScore(String url, WebTableRow row) throws ScoringFilterException;
+  public void injectedScore(String url, OldWebTableRow row) throws ScoringFilterException;
   
   /**
    * Set an initial score for newly discovered pages. Note: newly discovered pages
@@ -57,7 +57,7 @@ public interface ScoringFilter extends Configurable, TablePluggable {
    * @param row page row. Modifications will be persisted.
    * @throws ScoringFilterException
    */
-  public void initialScore(String url, WebTableRow row) throws ScoringFilterException;
+  public void initialScore(String url, OldWebTableRow row) throws ScoringFilterException;
   
   /**
    * This method prepares a sort value for the purpose of sorting and
@@ -66,7 +66,7 @@ public interface ScoringFilter extends Configurable, TablePluggable {
    * @param datum page row. Modifications will be persisted.
    * @param initSort initial sort value, or a value from previous filters in chain
    */
-  public float generatorSortValue(String url, WebTableRow row, float initSort) throws ScoringFilterException;
+  public float generatorSortValue(String url, OldWebTableRow row, float initSort) throws ScoringFilterException;
 
   /**
    * Distribute score value from the current page to all its outlinked pages.
@@ -74,13 +74,13 @@ public interface ScoringFilter extends Configurable, TablePluggable {
    * @param row page row
    * @param scoreData A list of {@link OutlinkedScoreDatum}s for every outlink.
    * These {@link OutlinkedScoreDatum}s will be passed to
-   * {@link #updateScore(String, WebTableRow, List)}
+   * {@link #updateScore(String, OldWebTableRow, List)}
    * for every outlinked URL.
    * @param allCount number of all collected outlinks from the source page
    * @throws ScoringFilterException
    */
   public void distributeScoreToOutlinks(String fromUrl,
-      WebTableRow row, Collection<ScoreDatum> scoreData,
+      OldWebTableRow row, Collection<ScoreDatum> scoreData,
       int allCount) throws ScoringFilterException;
 
   /**
@@ -91,7 +91,7 @@ public interface ScoringFilter extends Configurable, TablePluggable {
    * @param inlinked list of {@link OutlinkedScoreDatum}s for all inlinks pointing to this URL.
    * @throws ScoringFilterException
    */
-  public void updateScore(String url, WebTableRow row, List<ScoreDatum> inlinkedScoreData)
+  public void updateScore(String url, OldWebTableRow row, List<ScoreDatum> inlinkedScoreData)
   throws ScoringFilterException;
   
   /**
@@ -107,6 +107,6 @@ public interface ScoringFilter extends Configurable, TablePluggable {
    * other scoring strategies by modifying Lucene document directly.
    * @throws ScoringFilterException
    */
-  public float indexerScore(String url, NutchDocument doc, WebTableRow row, float initScore)
+  public float indexerScore(String url, NutchDocument doc, OldWebTableRow row, float initScore)
   throws ScoringFilterException;
 }

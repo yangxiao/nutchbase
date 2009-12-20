@@ -19,7 +19,7 @@ package org.apache.nutch.crawl;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.crawl.FetchSchedule;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * This class implements an adaptive re-fetch algorithm. This works as follows:
@@ -78,7 +78,7 @@ public class AdaptiveFetchSchedule extends AbstractFetchSchedule {
   }
 
   @Override
-  public void setFetchSchedule(String url, WebTableRow row,
+  public void setFetchSchedule(String url, OldWebTableRow row,
           long prevFetchTime, long prevModifiedTime,
           long fetchTime, long modifiedTime, int state) {
     super.setFetchSchedule(url, row, prevFetchTime, prevModifiedTime,

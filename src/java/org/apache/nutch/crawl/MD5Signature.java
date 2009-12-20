@@ -24,7 +24,7 @@ import org.apache.hadoop.io.MD5Hash;
 import org.apache.nutch.parse.Parse;
 import org.apache.nutch.util.hbase.HbaseColumn;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * Default implementation of a page signature. It calculates an MD5 hash
@@ -42,7 +42,7 @@ public class MD5Signature extends Signature {
   }
   
   @Override
-  public byte[] calculate(WebTableRow row, Parse parse) {
+  public byte[] calculate(OldWebTableRow row, Parse parse) {
     byte[] data = row.getContent();
     return MD5Hash.digest(data).getDigest();
   }

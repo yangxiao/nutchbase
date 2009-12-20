@@ -9,7 +9,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.nutch.crawl.Generator.SelectorEntry;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /** Reduce class for generate
  * 
@@ -18,7 +18,7 @@ import org.apache.nutch.util.hbase.WebTableRow;
  *
  */
 public class GeneratorReducer
-extends TableReducer<SelectorEntry, WebTableRow, SelectorEntry> {
+extends TableReducer<SelectorEntry, OldWebTableRow, SelectorEntry> {
 
   private long limit;
   private long maxPerHost;
@@ -27,9 +27,9 @@ extends TableReducer<SelectorEntry, WebTableRow, SelectorEntry> {
   private Random random = new Random();
 
   @Override
-  protected void reduce(SelectorEntry key, Iterable<WebTableRow> values,
+  protected void reduce(SelectorEntry key, Iterable<OldWebTableRow> values,
       Context context) throws IOException, InterruptedException {
-    for (WebTableRow row : values) {
+    for (OldWebTableRow row : values) {
       if (maxPerHost > 0) {
         String host = key.host;
         Integer hostCount = hostCountMap.get(host);

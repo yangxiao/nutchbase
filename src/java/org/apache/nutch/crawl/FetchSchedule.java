@@ -21,8 +21,9 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.io.Text;
+import org.apache.nutch.storage.WebTableRow;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * This interface defines the contract for implementations that manipulate
@@ -50,6 +51,8 @@ public interface FetchSchedule extends Configurable {
    * @param url URL of the page.
    * @param row url's row
    */
+  public void initializeSchedule(String url, OldWebTableRow row);
+
   public void initializeSchedule(String url, WebTableRow row);
 
   /**
@@ -73,7 +76,7 @@ public interface FetchSchedule extends Configurable {
    * is set to {@link #STATUS_UNKNOWN}, then it is unknown whether the page was changed; implementations
    * are free to follow a sensible default behavior.
    */
-  public void setFetchSchedule(String url, WebTableRow row,
+  public void setFetchSchedule(String url, OldWebTableRow row,
       long prevFetchTime, long prevModifiedTime,
       long fetchTime, long modifiedTime, int state);
 
@@ -85,7 +88,7 @@ public interface FetchSchedule extends Configurable {
    * @param url URL of the page
    * @param row url's row
    */
-  public void setPageGoneSchedule(String url, WebTableRow row,
+  public void setPageGoneSchedule(String url, OldWebTableRow row,
       long prevFetchTime, long prevModifiedTime, long fetchTime);
 
   /**
@@ -99,14 +102,14 @@ public interface FetchSchedule extends Configurable {
    * @param prevModifiedTime previous modified time
    * @param fetchTime current fetch time
    */
-  public void setPageRetrySchedule(String url, WebTableRow row,
+  public void setPageRetrySchedule(String url, OldWebTableRow row,
       long prevFetchTime, long prevModifiedTime, long fetchTime);
 
   /**
    * Calculates last fetch time of the given CrawlDatum.
    * @return the date as a long.
    */
-  public long calculateLastFetchTime(WebTableRow row);
+  public long calculateLastFetchTime(OldWebTableRow row);
 
   /**
    * This method provides information whether the page is suitable for
@@ -124,7 +127,7 @@ public interface FetchSchedule extends Configurable {
    * @return true, if the page should be considered for inclusion in the current
    * fetchlist, otherwise false.
    */
-  public boolean shouldFetch(String url, WebTableRow row, long curTime);
+  public boolean shouldFetch(String url, OldWebTableRow row, long curTime);
 
   /**
    * This method resets fetchTime, fetchInterval, modifiedTime and
@@ -135,7 +138,7 @@ public interface FetchSchedule extends Configurable {
    * the fetchTime to now. If false, force refetch whenever the next fetch
    * time is set.
    */
-  public void forceRefetch(String url, WebTableRow row, boolean asap);
+  public void forceRefetch(String url, OldWebTableRow row, boolean asap);
 
   public Set<HbaseColumn> getColumns();
 }

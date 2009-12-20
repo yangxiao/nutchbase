@@ -38,7 +38,7 @@ import org.apache.nutch.util.LogUtil;
 import org.apache.nutch.util.URLUtil;
 import org.apache.nutch.util.hbase.WebTableColumns;
 import org.apache.nutch.util.hbase.TableUtil;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 public class FetcherReducer
 extends TableReducer<ImmutableBytesWritable, FetchEntry, ImmutableBytesWritable> {
@@ -68,12 +68,12 @@ extends TableReducer<ImmutableBytesWritable, FetchEntry, ImmutableBytesWritable>
    * This class described the item to be fetched.
    */
   private static class FetchItem {
-    WebTableRow row;
+    OldWebTableRow row;
     String queueID;
     String url;
     URL u;
 
-    public FetchItem(String url, WebTableRow row, URL u, String queueID) {
+    public FetchItem(String url, OldWebTableRow row, URL u, String queueID) {
       this.row = row;
       this.url = url;
       this.u = u;
@@ -84,7 +84,7 @@ extends TableReducer<ImmutableBytesWritable, FetchEntry, ImmutableBytesWritable>
      * argument, either as a protocol + hostname pair, or protocol + IP
      * address pair.
      */
-    public static FetchItem create(String url, WebTableRow row, boolean byIP) {
+    public static FetchItem create(String url, OldWebTableRow row, boolean byIP) {
       String queueID;
       URL u = null;
       try {
@@ -237,7 +237,7 @@ extends TableReducer<ImmutableBytesWritable, FetchEntry, ImmutableBytesWritable>
       return queues.size();
     }
 
-    public void addFetchItem(String url, WebTableRow row) {
+    public void addFetchItem(String url, OldWebTableRow row) {
       final FetchItem it = FetchItem.create(url, row, byIP);
       if (it != null) addFetchItem(it);
     }
@@ -593,7 +593,7 @@ extends TableReducer<ImmutableBytesWritable, FetchEntry, ImmutableBytesWritable>
             // since currentIter.next() reuses the same
             // FetchEntry object we need to clone it
             Writables.copyWritable(currentIter.next(), entry);
-            WebTableRow row = new WebTableRow(entry.getRow());
+            OldWebTableRow row = new OldWebTableRow(entry.getRow());
             final String url =
               TableUtil.unreverseUrl(Bytes.toString(entry.getKey().get()));
             queues.addFetchItem(url, row);

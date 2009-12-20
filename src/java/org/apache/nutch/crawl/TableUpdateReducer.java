@@ -23,7 +23,7 @@ import org.apache.nutch.scoring.ScoringFilterException;
 import org.apache.nutch.scoring.ScoringFilters;
 import org.apache.nutch.util.hbase.WebTableColumns;
 import org.apache.nutch.util.hbase.TableUtil;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 public class TableUpdateReducer
 extends TableReducer<ImmutableBytesWritable, NutchWritable, ImmutableBytesWritable> {
@@ -51,13 +51,13 @@ extends TableReducer<ImmutableBytesWritable, NutchWritable, ImmutableBytesWritab
   protected void reduce(ImmutableBytesWritable key, Iterable<NutchWritable> values,
       Context context) throws IOException, InterruptedException {
 
-    WebTableRow row = null;
+    OldWebTableRow row = null;
     inlinkedScoreData.clear();
 
     for (NutchWritable nutchWritable : values) {
       Writable val = nutchWritable.get();
-      if (val instanceof WebTableRow) {
-        row = (WebTableRow) val;
+      if (val instanceof OldWebTableRow) {
+        row = (OldWebTableRow) val;
       } else {
         inlinkedScoreData.add((ScoreDatum) val);
       }
@@ -76,7 +76,7 @@ extends TableReducer<ImmutableBytesWritable, NutchWritable, ImmutableBytesWritab
       if (!additionsAllowed) {
         return;
       }
-      row = new WebTableRow(key.get());
+      row = new OldWebTableRow(key.get());
       schedule.initializeSchedule(url, row);
       row.setStatus(CrawlDatumHbase.STATUS_UNFETCHED);
       try {

@@ -13,11 +13,11 @@ import org.apache.nutch.net.URLFilters;
 import org.apache.nutch.net.URLNormalizers;
 import org.apache.nutch.scoring.ScoringFilterException;
 import org.apache.nutch.scoring.ScoringFilters;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.TableUtil;
 
 public class GeneratorMapper 
-extends TableMapper<SelectorEntry, WebTableRow> {
+extends TableMapper<SelectorEntry, OldWebTableRow> {
 
   private URLFilters filters;
   private URLNormalizers normalizers;
@@ -32,7 +32,7 @@ extends TableMapper<SelectorEntry, WebTableRow> {
     String reversedUrl = Bytes.toString(key.get());
     String url = TableUtil.unreverseUrl(reversedUrl);
 
-    WebTableRow row = new WebTableRow(result);
+    OldWebTableRow row = new OldWebTableRow(result);
 
     // If filtering is on don't generate URLs that don't pass URLFilters
     try {

@@ -42,7 +42,7 @@ import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.URLUtil;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
 import org.apache.nutch.util.hbase.TableUtil;
 
@@ -93,7 +93,7 @@ implements Tool {
   @Override
   public void map(ImmutableBytesWritable key, Result result, Context context)
   throws IOException {
-    final WebTableRow row = new WebTableRow(result);
+    final OldWebTableRow row = new OldWebTableRow(result);
     final String url = TableUtil.unreverseUrl(Bytes.toString(key.get()));
     final byte status = row.getStatus();
     if (status != CrawlDatumHbase.STATUS_FETCHED) {

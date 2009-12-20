@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 // Nutch Imports
 import org.apache.nutch.parse.ParseException;
 import org.apache.nutch.parse.ParserNotFound;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 // Hadoop imports
 import org.apache.hadoop.conf.Configuration;
@@ -59,7 +59,7 @@ public class ParseUtil {
    *
    * @throws ParseException If no suitable parser is found to perform the parse.
    */
-  public Parse parse(String url, WebTableRow row) throws ParseException {
+  public Parse parse(String url, OldWebTableRow row) throws ParseException {
     Parser[] parsers = null;
     
     String contentType = row.getContentType();

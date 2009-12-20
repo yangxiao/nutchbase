@@ -1,9 +1,7 @@
 package org.apache.nutch.crawl;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
-import org.apache.avro.util.Utf8;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -19,12 +17,10 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.nutch.storage.Mark;
 import org.apache.nutch.storage.NutchFields;
-import org.apache.nutch.storage.NutchHashMap;
 import org.apache.nutch.storage.NutchSerializer;
 import org.apache.nutch.storage.NutchSerializerFactory;
 import org.apache.nutch.storage.WebTableRow;
 import org.apache.nutch.storage.mapreduce.NutchTableRowSerialization;
-import org.apache.nutch.storage.mapreduce.RowInputFormat;
 import org.apache.nutch.storage.mapreduce.RowMapper;
 import org.apache.nutch.storage.mapreduce.RowOutputFormat;
 import org.apache.nutch.storage.mapreduce.StringSerialization;
@@ -39,6 +35,10 @@ implements Tool {
   public static final Log LOG = LogFactory.getLog(Injector.class);
 
   private Configuration conf;
+
+  private FetchSchedule schedule;
+
+  private float scoreInjected;
 
   public static class UrlMapper2
   extends Mapper<LongWritable, Text, String, WebTableRow> {
@@ -56,7 +56,6 @@ implements Tool {
       String url = value.toString();
       String reversedUrl = TableUtil.reverseUrl(url);
       WebTableRow row = serializer.makeRow();
-      row.setMetadata(new NutchHashMap<Utf8, ByteBuffer>(null));
       Mark.INJECT_MARK.putMark(row, TableUtil.YES_VAL);
       context.write(reversedUrl, row);
     }
@@ -78,15 +77,23 @@ implements Tool {
   }
 
   @Override
+  public void setup(Context context) throws IOException {
+    Configuration conf = context.getConfiguration();
+    schedule = FetchScheduleFactory.getFetchSchedule(conf);
+    scoreInjected = conf.getFloat("db.score.injected", 1.0f);
+  }
+
+  @Override
   protected void map(String key, WebTableRow row, Context context)
   throws IOException, InterruptedException {
     if (Mark.INJECT_MARK.checkMark(row) == null) {
       return;
     }
     Mark.INJECT_MARK.removeMark(row);
-    if (row.getStatus() == -1) {
+    if (!row.has(NutchFields.STATUS)) {
       row.setStatus(CrawlDatumHbase.STATUS_UNFETCHED);
-      row.setFetchTime(System.currentTimeMillis());
+      schedule.initializeSchedule(key, row);
+      row.setScore(scoreInjected);
     }
     context.write(key, row);
   }
@@ -110,13 +117,10 @@ implements Tool {
     job.setNumReduceTasks(0);
     job.waitForCompletion(true);
 
-    getConf().setStrings(RowInputFormat.MAPRED_FIELDS,
-        NutchFields.STATUS, NutchFields.METADATA);
     job = new NutchJob(getConf(), "inject-p2 " + urlDir);
-    job.setInputFormatClass(RowInputFormat.class);
-    job.setMapperClass(Injector2.class);
-    job.setMapOutputKeyClass(String.class);
-    job.setMapOutputValueClass(WebTableRow.class);
+    RowMapper.initRowMapperJob(job, String.class,
+        WebTableRow.class, Injector2.class,
+        NutchFields.METADATA, NutchFields.STATUS);
     job.setOutputFormatClass(RowOutputFormat.class);
     job.setReducerClass(Reducer.class);
     job.setNumReduceTasks(0);

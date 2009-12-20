@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.nutch.plugin.*;
 import org.apache.nutch.util.ObjectCache;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.indexer.IndexingException;
 import org.apache.nutch.indexer.NutchDocument;
@@ -105,7 +105,7 @@ public class IndexingFilters {
     }
   }  
   /** Run all defined filters. */
-  public NutchDocument filter(NutchDocument doc, String url, WebTableRow row)
+  public NutchDocument filter(NutchDocument doc, String url, OldWebTableRow row)
   throws IndexingException {
     for (IndexingFilter indexingFilter : indexingFilters) {
       doc = indexingFilter.filter(doc, url, row);

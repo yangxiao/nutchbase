@@ -30,12 +30,12 @@ import org.apache.nutch.scoring.ScoringFilters;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
 import org.apache.nutch.util.hbase.TableUtil;
 
 public class Indexer
-extends TableMapper<ImmutableBytesWritable, WebTableRow> 
+extends TableMapper<ImmutableBytesWritable, OldWebTableRow> 
 implements Tool {
 
   public static final String DONE_NAME = "index.done";
@@ -68,7 +68,7 @@ implements Tool {
   @Override
   public void map(ImmutableBytesWritable key, Result result, Context context)
   throws IOException, InterruptedException {
-    WebTableRow row = new WebTableRow(result);
+    OldWebTableRow row = new OldWebTableRow(result);
 
     ParseStatus pstatus = row.getParseStatus();
     if (!pstatus.isSuccess() || 
@@ -107,7 +107,7 @@ implements Tool {
     TableMapReduceUtil.initTableMapperJob(table,
         scan,
         Indexer.class, ImmutableBytesWritable.class,
-        WebTableRow.class, job);
+        OldWebTableRow.class, job);
 
     job.setReducerClass(IndexerReducer.class);
     job.setOutputFormatClass(IndexerOutputFormat.class);

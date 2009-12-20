@@ -21,12 +21,12 @@ import java.util.Collection;
 
 import org.apache.nutch.parse.Parse;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.hadoop.conf.Configured;
 
 public abstract class Signature extends Configured {
   
-  public abstract byte[] calculate(WebTableRow row, Parse parse);
+  public abstract byte[] calculate(OldWebTableRow row, Parse parse);
   
   public abstract Collection<HbaseColumn> getColumns();
 }

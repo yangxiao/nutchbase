@@ -48,7 +48,7 @@ public class NutchWritable extends GenericWritableConfigurable {
       org.apache.nutch.searcher.HitDetails.class,
       org.apache.nutch.searcher.Hits.class,
       org.apache.nutch.scoring.ScoreDatum.class,
-      org.apache.nutch.util.hbase.WebTableRow.class,
+      org.apache.nutch.util.hbase.OldWebTableRow.class,
       org.apache.hadoop.hbase.client.Result.class
     };
   }

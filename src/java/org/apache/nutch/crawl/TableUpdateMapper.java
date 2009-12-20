@@ -15,7 +15,7 @@ import org.apache.nutch.parse.Outlink;
 import org.apache.nutch.scoring.ScoreDatum;
 import org.apache.nutch.scoring.ScoringFilterException;
 import org.apache.nutch.scoring.ScoringFilters;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.TableUtil;
 
 public class TableUpdateMapper
@@ -31,7 +31,7 @@ extends TableMapper<ImmutableBytesWritable, NutchWritable> {
   throws IOException, InterruptedException {
 
     String url = TableUtil.unreverseUrl(Bytes.toString(key.get()));
-    WebTableRow row = new WebTableRow(result);
+    OldWebTableRow row = new OldWebTableRow(result);
 
     Collection<Outlink> outlinks = row.getOutlinks();
 

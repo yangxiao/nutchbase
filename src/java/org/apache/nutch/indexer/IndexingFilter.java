@@ -25,7 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.indexer.IndexingException;
 import org.apache.nutch.indexer.NutchDocument;
 import org.apache.nutch.plugin.TablePluggable;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 
 /** Extension point for indexing.  Permits one to add metadata to the indexed
@@ -47,7 +47,7 @@ public interface IndexingFilter extends TablePluggable, Configurable {
    * should be discarded)
    * @throws IndexingException
    */
-  NutchDocument filter(NutchDocument doc, String url, WebTableRow row)
+  NutchDocument filter(NutchDocument doc, String url, OldWebTableRow row)
   throws IndexingException;
   
   /** Adds index-level configuraition options.

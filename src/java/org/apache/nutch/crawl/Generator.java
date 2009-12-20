@@ -24,13 +24,11 @@ import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.URLUtil;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
 import org.apache.nutch.util.hbase.TableUtil;
 
-public class Generator
-extends Configured
-implements Tool {
+public class Generator extends Configured implements Tool {
   public static final String CRAWL_GENERATE_FILTER = "crawl.generate.filter";
   public static final String GENERATE_MAX_PER_HOST = "generate.max.per.host";
   public static final String CRAWL_TOP_N = "crawl.topN";
@@ -142,7 +140,7 @@ implements Tool {
     Scan scan = TableUtil.createScanFromColumns(COLUMNS);
     TableMapReduceUtil.initTableMapperJob(table, scan,
         GeneratorMapper.class, SelectorEntry.class,
-       WebTableRow.class, job);
+       OldWebTableRow.class, job);
     TableMapReduceUtil.initTableReducerJob(table, GeneratorReducer.class, job, PartitionSelectorByHost.class);
 
     job.waitForCompletion(true);

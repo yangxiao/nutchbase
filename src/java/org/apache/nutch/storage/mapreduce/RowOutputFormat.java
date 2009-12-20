@@ -40,7 +40,6 @@ extends OutputFormat<K, R>{
       @Override
       public void write(K key, R row)
       throws IOException, InterruptedException {
-        System.out.println("Here: " + key);
         serializer.updateRow(key, row);
       }
     };

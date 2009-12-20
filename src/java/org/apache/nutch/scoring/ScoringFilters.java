@@ -32,7 +32,7 @@ import org.apache.nutch.plugin.PluginRepository;
 import org.apache.nutch.plugin.PluginRuntimeException;
 import org.apache.nutch.util.ObjectCache;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 /**
  * Creates and caches {@link ScoringFilter} implementing plugins.
@@ -86,7 +86,7 @@ public class ScoringFilters extends Configured implements ScoringFilter {
 
   /** Calculate a sort value for Generate. */
   @Override
-  public float generatorSortValue(String url, WebTableRow row, float initSort)
+  public float generatorSortValue(String url, OldWebTableRow row, float initSort)
   throws ScoringFilterException {
     for (ScoringFilter filter : filters) {
       initSort = filter.generatorSortValue(url, row, initSort);
@@ -96,7 +96,7 @@ public class ScoringFilters extends Configured implements ScoringFilter {
 
   /** Calculate a new initial score, used when adding newly discovered pages. */
   @Override
-  public void initialScore(String url, WebTableRow row) throws ScoringFilterException {
+  public void initialScore(String url, OldWebTableRow row) throws ScoringFilterException {
     for (ScoringFilter filter : filters) {
       filter.initialScore(url, row);
     }
@@ -104,14 +104,14 @@ public class ScoringFilters extends Configured implements ScoringFilter {
 
   /** Calculate a new initial score, used when injecting new pages. */
   @Override
-  public void injectedScore(String url, WebTableRow row) throws ScoringFilterException {
+  public void injectedScore(String url, OldWebTableRow row) throws ScoringFilterException {
     for (ScoringFilter filter : filters) {
       filter.injectedScore(url, row);
     }
   }
 
   @Override
-  public void distributeScoreToOutlinks(String fromUrl, WebTableRow row,
+  public void distributeScoreToOutlinks(String fromUrl, OldWebTableRow row,
       Collection<ScoreDatum> scoreData, int allCount)
       throws ScoringFilterException {
     for (ScoringFilter filter : filters) {
@@ -120,7 +120,7 @@ public class ScoringFilters extends Configured implements ScoringFilter {
   }
  
   @Override
-  public void updateScore(String url, WebTableRow row,
+  public void updateScore(String url, OldWebTableRow row,
       List<ScoreDatum> inlinkedScoreData) throws ScoringFilterException {
     for (ScoringFilter filter : filters) {
       filter.updateScore(url, row, inlinkedScoreData);
@@ -128,7 +128,7 @@ public class ScoringFilters extends Configured implements ScoringFilter {
   }
 
   @Override
-  public float indexerScore(String url, NutchDocument doc, WebTableRow row,
+  public float indexerScore(String url, NutchDocument doc, OldWebTableRow row,
       float initScore) throws ScoringFilterException {
     for (ScoringFilter filter : filters) {
       initScore = filter.indexerScore(url, doc, row, initScore);
