@@ -4,10 +4,13 @@
  "types": [
      {"name": "WebTableRow", "type": "record",
       "fields": [
+          {"name": "status", "type": "int"},
           {"name": "fetchTime", "type": "long"},
+          {"name": "fetchInterval", "type": "int"},
+          {"name": "retriesSinceFetch", "type": "int"},
           {"name": "title", "type": "string"},
           {"name": "text", "type": "string"},
-          {"name": "status", "type": "int"},
+          {"name": "score", "type": "float"},
           {"name": "outlinks", "type": {"type": "map", "values": "string"}},
           {"name": "metadata", "type": {"type": "map", "values": "bytes"}}
       ]

@@ -2,15 +2,27 @@
   <description>
     <family name="p"/> <!-- This can also have params like compression, bloom filters -->
     <family name="f"/>
+    <family name="s"/>
     <family name="ol"/>
     <family name="mtdt"/>
   </description>
   <fields>
+    <!-- fetch fields                                       -->
+    <field name="status" family="f" qualifier="st"/>
     <field name="fetchTime" family="f" qualifier="ts"/>
+    <field name="fetchInterval" family="f" qualifier="fi"/>
+    <field name="retriesSinceFetch" family="f" qualifier="rsf"/>
+    
+    <!-- parse fields                                       -->
     <field name="title" family="p" qualifier="t"/>
     <field name="text" family="p" qualifier="c"/>
     <field name="status" family="f" qualifier="st"/>
+
+    <!-- score fields                                       -->
+    <field name="score" family="s" qualifier="s"/>
+    
     <field name="outlinks" family="ol" />
+    
     <field name="metadata" family="mtdt" />
   </fields>
 </table>
