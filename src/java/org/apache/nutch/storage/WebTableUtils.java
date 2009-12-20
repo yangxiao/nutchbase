@@ -1,8 +1,8 @@
 package org.apache.nutch.storage;
 
-import java.util.Map.Entry;
+import java.util.Map;
 
-import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
 import org.apache.nutch.util.NutchConfiguration;
 
 public class WebTableUtils {
@@ -25,17 +25,11 @@ public class WebTableUtils {
         fields = args[3].split(",");
       }
       WebTableRow row = serializer.readRow(key, fields);
-      Schema schema = row.getSchema();
+      Map<String, Field> schemaFields = row.getSchema().getFields();
       for (String field : fields) {
         if (!row.has(field)) { continue; }
-        int i = 0;
-        for (Entry<String, Schema> e : schema.getFieldSchemas()) {
-          if (field.equals(e.getKey())) {
-            break;
-          }
-          i++;
-        }
-        System.out.println(field+": " + row.get(i));
+        Field schemaField = schemaFields.get(field);
+        System.out.println(field+": " + row.get(schemaField.pos()));
       }
     }
   }
