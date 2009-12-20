@@ -17,16 +17,16 @@ import org.apache.nutch.parse.Outlink;
 import org.apache.nutch.parse.ParseStatus;
 import org.apache.nutch.protocol.ProtocolStatus;
 
-public class WebTableRow extends HbaseRow {
-  public WebTableRow() { // do not use!
+public class OldWebTableRow extends HbaseRow {
+  public OldWebTableRow() { // do not use!
     super();
   }
   
-  public WebTableRow(byte[] row) {
+  public OldWebTableRow(byte[] row) {
     super(row);
   }
 
-  public WebTableRow(Result result) {
+  public OldWebTableRow(Result result) {
     super(result);  
   }
   
