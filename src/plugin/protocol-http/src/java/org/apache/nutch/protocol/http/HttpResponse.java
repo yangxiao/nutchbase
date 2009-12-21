@@ -36,9 +36,8 @@ import org.apache.nutch.protocol.ProtocolException;
 import org.apache.nutch.protocol.http.api.HttpBase;
 import org.apache.nutch.protocol.http.api.HttpException;
 import org.apache.nutch.util.LogUtil;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
-
 
 /** An HTTP response. */
 public class HttpResponse implements Response {
@@ -50,7 +49,7 @@ public class HttpResponse implements Response {
   private Metadata headers = new SpellCheckedMetadata();
 
 
-  public HttpResponse(HttpBase http, URL url, WebTableRow row)
+  public HttpResponse(HttpBase http, URL url, OldWebTableRow row)
     throws ProtocolException, IOException {
 
     this.http = http;

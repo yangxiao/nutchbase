@@ -29,8 +29,8 @@ import org.apache.nutch.indexer.NutchDocument;
 import org.apache.nutch.indexer.lucene.LuceneWriter;
 import org.apache.nutch.metadata.Nutch;
 import org.apache.nutch.util.hbase.HbaseColumn;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,7 +55,7 @@ public class BasicIndexingFilter implements IndexingFilter {
     COLUMNS.add(new HbaseColumn(WebTableColumns.INLINKS));
   }
 
-  public NutchDocument filter(NutchDocument doc, String url, WebTableRow row)
+  public NutchDocument filter(NutchDocument doc, String url, OldWebTableRow row)
     throws IndexingException {
 
     String reprUrl = null;

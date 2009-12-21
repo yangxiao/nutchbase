@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.html.dom.HTMLDocumentImpl;
 import org.apache.nutch.metadata.Metadata;
@@ -51,8 +50,8 @@ import org.apache.nutch.util.EncodingDetector;
 import org.apache.nutch.util.LogUtil;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.hbase.HbaseColumn;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.TableUtil;
-import org.apache.nutch.util.hbase.WebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
 import org.cyberneko.html.parsers.DOMFragmentParser;
 import org.w3c.dom.DOMException;
@@ -136,7 +135,7 @@ public class HtmlParser implements Parser {
   
   private String cachingPolicy;
 
-  public Parse getParse(String url, WebTableRow row) {
+  public Parse getParse(String url, OldWebTableRow row) {
     HTMLMetaTags metaTags = new HTMLMetaTags();
 
     String baseUrl = row.getBaseUrl();
@@ -312,7 +311,7 @@ public class HtmlParser implements Parser {
     Configuration conf = NutchConfiguration.create();
     HtmlParser parser = new HtmlParser();
     parser.setConf(conf);
-    WebTableRow row = new WebTableRow(Bytes.toBytes(TableUtil.reverseUrl(url)));
+    OldWebTableRow row = new OldWebTableRow(Bytes.toBytes(TableUtil.reverseUrl(url)));
     row.setBaseUrl(url);
     row.setContent(bytes);
     row.setContentType("text/html");

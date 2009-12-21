@@ -35,7 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.net.protocols.Response;
 import org.apache.nutch.protocol.ProtocolException;
 import org.apache.nutch.protocol.RobotRules;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 
 
 /**
@@ -454,7 +454,7 @@ public class RobotRulesParser implements Configurable {
       if (LOG.isTraceEnabled()) { LOG.trace("cache miss " + url); }
       try {
         Response response = http.getResponse(new URL(url, "/robots.txt"),
-                                             new WebTableRow(), true);
+                                             new OldWebTableRow(), true);
 
         if (response.getCode() == 200)               // found rules: parse them
           robotRules = parseRules(response.getContent());

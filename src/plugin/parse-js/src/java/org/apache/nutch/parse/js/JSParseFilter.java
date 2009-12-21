@@ -39,8 +39,7 @@ import org.apache.nutch.parse.Parser;
 import org.apache.nutch.plugin.Pluggable;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.oro.text.regex.MatchResult;
 import org.apache.oro.text.regex.Pattern;
@@ -71,7 +70,7 @@ public class JSParseFilter implements HtmlParseFilter, Parser {
   private Configuration conf;
   
   @Override
-  public Parse filter(String url, WebTableRow row, Parse parse,
+  public Parse filter(String url, OldWebTableRow row, Parse parse,
     HTMLMetaTags metaTags, DocumentFragment doc) {
 
     ArrayList<Outlink> outlinks = new ArrayList<Outlink>();
@@ -143,7 +142,7 @@ public class JSParseFilter implements HtmlParseFilter, Parser {
   }
   
   @Override
-  public Parse getParse(String url, WebTableRow row) {
+  public Parse getParse(String url, OldWebTableRow row) {
     String type = row.getContentType();
     if (type != null && !type.trim().equals("") && !type.toLowerCase().startsWith("application/x-javascript"))
       return new ParseStatus(ParseStatus.FAILED_INVALID_FORMAT,

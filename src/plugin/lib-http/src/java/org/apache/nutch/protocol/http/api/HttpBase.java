@@ -39,8 +39,8 @@ import org.apache.nutch.protocol.RobotRules;
 import org.apache.nutch.util.GZIPUtils;
 import org.apache.nutch.util.LogUtil;
 import org.apache.nutch.util.MimeUtil;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.TableUtil;
-import org.apache.nutch.util.hbase.WebTableRow;
 
 // Hadoop imports
 import org.apache.hadoop.conf.Configuration;
@@ -186,7 +186,7 @@ public abstract class HttpBase implements Protocol {
    
   
   
-  public ProtocolOutput getProtocolOutput(String url, WebTableRow row) {
+  public ProtocolOutput getProtocolOutput(String url, OldWebTableRow row) {
     
     try {
       URL u = new URL(url);
@@ -533,7 +533,7 @@ public abstract class HttpBase implements Protocol {
 //      LOGGER.setLevel(Level.FINE);
 //    }
     
-    ProtocolOutput out = http.getProtocolOutput(url, new WebTableRow(Bytes.toBytes(TableUtil.reverseUrl(url))));
+    ProtocolOutput out = http.getProtocolOutput(url, new OldWebTableRow(Bytes.toBytes(TableUtil.reverseUrl(url))));
     Content content = out.getContent();
     
     System.out.println("Status: " + out.getStatus());
@@ -550,12 +550,12 @@ public abstract class HttpBase implements Protocol {
   
   
   protected abstract Response getResponse(URL url,
-                                          WebTableRow row,
+                                          OldWebTableRow row,
                                           boolean followRedirects)
     throws ProtocolException, IOException;
 
   @Override
-  public RobotRules getRobotRules(String url, WebTableRow row) {
+  public RobotRules getRobotRules(String url, OldWebTableRow row) {
     return robots.getRobotRulesSet(this, url);
   }
 

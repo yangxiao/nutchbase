@@ -35,7 +35,7 @@ import org.apache.nutch.scoring.ScoringFilter;
 import org.apache.nutch.scoring.ScoringFilterException;
 import org.apache.nutch.util.LogUtil;
 import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.WebTableRow;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
 
 /**
@@ -84,7 +84,7 @@ public class OPICScoringFilter implements ScoringFilter {
 
   /** Set to the value defined in config, 1.0f by default. */
   @Override
-  public void injectedScore(String url, WebTableRow row)
+  public void injectedScore(String url, OldWebTableRow row)
   throws ScoringFilterException {
     row.setScore(scoreInjected);
     row.putMeta(CASH_KEY, Bytes.toBytes(scoreInjected));
@@ -93,20 +93,20 @@ public class OPICScoringFilter implements ScoringFilter {
   /** Set to 0.0f (unknown value) - inlink contributions will bring it to
    * a correct level. Newly discovered pages have at least one inlink. */
   @Override
-  public void initialScore(String url, WebTableRow row) throws ScoringFilterException {
+  public void initialScore(String url, OldWebTableRow row) throws ScoringFilterException {
     row.setScore(0.0f);
     row.putMeta(CASH_KEY, Bytes.toBytes(0.0f));
   }
 
   /** Use {@link CrawlDatum#getScore()}. */
   @Override
-  public float generatorSortValue(String url, WebTableRow row, float initSort) throws ScoringFilterException {
+  public float generatorSortValue(String url, OldWebTableRow row, float initSort) throws ScoringFilterException {
     return row.getScore() * initSort;
   }
 
   /** Increase the score by a sum of inlinked scores. */
   @Override
-  public void updateScore(String url, WebTableRow row, List<ScoreDatum> inlinkedScoreData) {
+  public void updateScore(String url, OldWebTableRow row, List<ScoreDatum> inlinkedScoreData) {
     float adjust = 0.0f;
     for (ScoreDatum scoreDatum : inlinkedScoreData) {
       adjust += scoreDatum.getScore();
@@ -120,7 +120,7 @@ public class OPICScoringFilter implements ScoringFilter {
   /** Get cash on hand, divide it by the number of outlinks and apply. */
   @Override
   public void distributeScoreToOutlinks(String fromUrl,
-      WebTableRow row, Collection<ScoreDatum> scoreData,
+      OldWebTableRow row, Collection<ScoreDatum> scoreData,
       int allCount) {
     float cash = Bytes.toFloat(row.getMeta(CASH_KEY));
     if (cash == 0) {
@@ -150,7 +150,7 @@ public class OPICScoringFilter implements ScoringFilter {
   }
 
   /** Dampen the boost value by scorePower.*/
-  public float indexerScore(String url, NutchDocument doc, WebTableRow row, float initScore) {
+  public float indexerScore(String url, NutchDocument doc, OldWebTableRow row, float initScore) {
     return (float)Math.pow(row.getScore(), scorePower) * initScore;
   }
 

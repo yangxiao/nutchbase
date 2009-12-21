@@ -30,8 +30,8 @@ import org.apache.nutch.protocol.ProtocolException;
 import org.apache.nutch.protocol.http.api.HttpBase;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.hbase.HbaseColumn;
+import org.apache.nutch.util.hbase.OldWebTableRow;
 import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.WebTableRow;
 
 
 public class Http extends HttpBase {
@@ -64,7 +64,7 @@ public class Http extends HttpBase {
   }
 
   @Override
-  protected Response getResponse(URL url, WebTableRow row, boolean redirect)
+  protected Response getResponse(URL url, OldWebTableRow row, boolean redirect)
     throws ProtocolException, IOException {
     return new HttpResponse(this, url, row);
   }
