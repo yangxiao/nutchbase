@@ -2,12 +2,12 @@ package org.apache.nutch.crawl;
 
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.nutch.crawl.Generator.SelectorEntry;
-import org.apache.nutch.util.hbase.OldWebTableRow;
+import org.apache.nutch.storage.WebTableRow;
 
-public class PartitionSelectorByHost extends Partitioner<SelectorEntry, OldWebTableRow> {
+public class PartitionSelectorByHost extends Partitioner<SelectorEntry, WebTableRow> {
 
   @Override
-  public int getPartition(SelectorEntry key, OldWebTableRow value,
+  public int getPartition(SelectorEntry key, WebTableRow value,
       int numPartitions) {
     int hashCode = key.host.hashCode();
 

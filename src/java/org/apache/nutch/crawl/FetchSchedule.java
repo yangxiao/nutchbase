@@ -129,6 +129,8 @@ public interface FetchSchedule extends Configurable {
    */
   public boolean shouldFetch(String url, OldWebTableRow row, long curTime);
 
+  public boolean shouldFetch(String url, WebTableRow row, long curTime);
+
   /**
    * This method resets fetchTime, fetchInterval, modifiedTime and
    * page signature, so that it forces refetching.

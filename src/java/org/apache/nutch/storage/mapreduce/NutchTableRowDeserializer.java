@@ -22,6 +22,11 @@ public class NutchTableRowDeserializer extends SpecificDatumReader
 implements Deserializer<NutchTableRow> {
 
   private BinaryDecoder decoder;
+  private Class<NutchTableRow> rowClass;
+
+  public NutchTableRowDeserializer(Class<NutchTableRow> c) {
+    this.rowClass = c;
+  }
   
   @Override
   public void open(InputStream in) throws IOException {
@@ -34,6 +39,13 @@ implements Deserializer<NutchTableRow> {
   @Override
   public NutchTableRow deserialize(NutchTableRow row)
   throws IOException {
+    if (row == null) {
+      try {
+        row = rowClass.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
     NutchTableRowInternal t = (NutchTableRowInternal) row;
     setSchema(t.getSchema());
 

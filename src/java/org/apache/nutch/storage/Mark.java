@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import org.apache.avro.util.Utf8;
 
 public enum Mark {
-  INJECT_MARK("_injmrk_");
+  INJECT_MARK("_injmrk_"), GENERATE_MARK("_gnmrk_");
 
   private Utf8 name;
   

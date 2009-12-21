@@ -17,7 +17,7 @@ import org.apache.avro.reflect.FixedSize;
 import org.apache.nutch.storage.NutchHashMap;
 
 @SuppressWarnings("all")
-public class WebTableRow extends NutchTableRowInternal implements SpecificRecord {
+public class WebTableRow extends NutchTableRowInternal {
   public static final Schema _SCHEMA = Schema.parse("{\"type\":\"record\",\"name\":\"WebTableRow\",\"namespace\":\"org.apache.nutch.storage\",\"fields\":[{\"name\":\"status\",\"type\":\"int\"},{\"name\":\"fetchTime\",\"type\":\"long\"},{\"name\":\"fetchInterval\",\"type\":\"int\"},{\"name\":\"retriesSinceFetch\",\"type\":\"int\"},{\"name\":\"title\",\"type\":\"string\"},{\"name\":\"text\",\"type\":\"string\"},{\"name\":\"score\",\"type\":\"float\"},{\"name\":\"outlinks\",\"type\":{\"type\":\"map\",\"values\":\"string\"}},{\"name\":\"metadata\",\"type\":{\"type\":\"map\",\"values\":\"bytes\"}}]}");
   private int status;
   private long fetchTime;

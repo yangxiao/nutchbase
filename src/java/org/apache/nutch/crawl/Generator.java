@@ -10,9 +10,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
@@ -20,13 +17,13 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.nutch.storage.NutchFields;
+import org.apache.nutch.storage.WebTableRow;
+import org.apache.nutch.storage.mapreduce.RowMapper;
+import org.apache.nutch.storage.mapreduce.RowReducer;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.URLUtil;
-import org.apache.nutch.util.hbase.HbaseColumn;
-import org.apache.nutch.util.hbase.OldWebTableRow;
-import org.apache.nutch.util.hbase.WebTableColumns;
-import org.apache.nutch.util.hbase.TableUtil;
 
 public class Generator extends Configured implements Tool {
   public static final String CRAWL_GENERATE_FILTER = "crawl.generate.filter";
@@ -34,19 +31,18 @@ public class Generator extends Configured implements Tool {
   public static final String CRAWL_TOP_N = "crawl.topN";
   public static final String CRAWL_GEN_CUR_TIME = "crawl.gen.curTime";
   public static final String CRAWL_RANDOM_SEED = "generate.partition.seed";
+  public static final String CRAWL_ID = "crawl.id";
   
-  private static final Set<HbaseColumn> COLUMNS = new HashSet<HbaseColumn>();
+  private static final Set<String> FIELDS = new HashSet<String>();
   
   static {
-    COLUMNS.add(new HbaseColumn(WebTableColumns.FETCH_TIME));
-    COLUMNS.add(new HbaseColumn(WebTableColumns.SCORE));
-    COLUMNS.add(new HbaseColumn(WebTableColumns.STATUS));
+    FIELDS.add(NutchFields.FETCH_TIME);
+    FIELDS.add(NutchFields.SCORE);
+    FIELDS.add(NutchFields.STATUS);
   }
   
-  public static final byte[] GENERATOR_MARK =
-    Bytes.toBytes("__genmrk__");
-  
   public static final Log LOG = LogFactory.getLog(Generator.class);
+  public static final byte[] GENERATOR_MARK = null;
 
   public static class SelectorEntry
   implements WritableComparable<SelectorEntry> {
@@ -119,47 +115,42 @@ public class Generator extends Configured implements Tool {
    * @throws ClassNotFoundException 
    * @throws InterruptedException 
    * */
-  public void generate(String table, long topN, long curTime, boolean filter)
+  public void generate(long topN, long curTime, boolean filter)
   throws Exception {    
  
-    LOG.info("GeneratorHbase: Selecting best-scoring urls due for fetch.");
-    LOG.info("GeneratorHbase: starting");
-    LOG.info("GeneratorHbase: filtering: " + filter);
+    LOG.info("Generator: Selecting best-scoring urls due for fetch.");
+    LOG.info("Generator: starting");
+    LOG.info("Generator: filtering: " + filter);
     if (topN != Long.MAX_VALUE) {
-      LOG.info("GeneratorHbase: topN: " + topN);
+      LOG.info("Generator: topN: " + topN);
     }
  
     // map to inverted subset due for fetch, sort by score
     getConf().setLong(CRAWL_GEN_CUR_TIME, curTime);
     getConf().setLong(CRAWL_TOP_N, topN);
     getConf().setBoolean(CRAWL_GENERATE_FILTER, filter);
-    getConf().setInt(CRAWL_RANDOM_SEED, new Random().nextInt());
+    int randomSeed = new Random().nextInt();
+    String crawlId = (curTime / 1000) + "-" + randomSeed;
+    getConf().setInt(CRAWL_RANDOM_SEED, randomSeed);
+    getConf().set(CRAWL_ID, crawlId);
 
-    Job job = new NutchJob(getConf(), "generate-hbase: " + table);
-    job.setJobName("generate-hbase: " + table);
-    Scan scan = TableUtil.createScanFromColumns(COLUMNS);
-    TableMapReduceUtil.initTableMapperJob(table, scan,
-        GeneratorMapper.class, SelectorEntry.class,
-       OldWebTableRow.class, job);
-    TableMapReduceUtil.initTableReducerJob(table, GeneratorReducer.class, job, PartitionSelectorByHost.class);
+    Job job = new NutchJob(getConf(), "generate: " + crawlId);
+    RowMapper.initRowMapperJob(job, SelectorEntry.class,
+        WebTableRow.class, GeneratorMapper.class, FIELDS);
+    RowReducer.initRowReducerJob(job, GeneratorReducer.class, PartitionSelectorByHost.class);
 
     job.waitForCompletion(true);
     
-    LOG.info("GeneratorHbase: done");
+    LOG.info("Generator: done");
+    System.out.println("Generated crawl id: " + crawlId);
   }
 
   public int run(String[] args) throws Exception {
-    if (args.length < 1) {
-      System.out.println("Usage: GeneratorHbase <webtable> [-topN N] [-noFilter]");
-      return -1;
-    }
-    
-    String table = args[0];
     long curTime = System.currentTimeMillis();
     long topN = Long.MAX_VALUE;
     boolean filter = true;
 
-    for (int i = 1; i < args.length; i++) {
+    for (int i = 0; i < args.length; i++) {
       if ("-topN".equals(args[i])) {
         topN = Long.parseLong(args[++i]);
       } else if ("-noFilter".equals(args[i])) {
@@ -168,10 +159,10 @@ public class Generator extends Configured implements Tool {
     }
     
     try {
-      generate(table, topN, curTime, filter);
+      generate(topN, curTime, filter);
       return 0;
     } catch (Exception e) {
-      LOG.fatal("GeneratorHbase: " + StringUtils.stringifyException(e));
+      LOG.fatal("Generator: " + StringUtils.stringifyException(e));
       return -1;
     }
   }

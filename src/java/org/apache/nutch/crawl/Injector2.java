@@ -29,7 +29,7 @@ import org.apache.nutch.util.NutchJob;
 import org.apache.nutch.util.hbase.TableUtil;
 
 public class Injector2
-extends RowMapper<String, WebTableRow>
+extends RowMapper<String, WebTableRow, String, WebTableRow>
 implements Tool {
 
   public static final Log LOG = LogFactory.getLog(Injector.class);

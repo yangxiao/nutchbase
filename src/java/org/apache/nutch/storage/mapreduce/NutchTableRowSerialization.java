@@ -10,12 +10,12 @@ implements Serialization<NutchTableRow> {
 
   @Override
   public boolean accept(Class<?> c) {
-    return c.isAssignableFrom(NutchTableRow.class);
+    return NutchTableRow.class.isAssignableFrom(c);
   }
 
   @Override
   public Deserializer<NutchTableRow> getDeserializer(Class<NutchTableRow> c) {
-    return new NutchTableRowDeserializer();
+    return new NutchTableRowDeserializer(c);
   }
 
   @Override

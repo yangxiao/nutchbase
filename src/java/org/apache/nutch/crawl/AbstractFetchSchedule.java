@@ -188,6 +188,19 @@ implements FetchSchedule {
     }
     return true;
   }
+
+  @Override
+  public boolean shouldFetch(String url, WebTableRow row, long curTime) {
+    // pages are never truly GONE - we have to check them from time to time.
+    // pages with too long fetchInterval are adjusted so that they fit within
+    // maximum fetchInterval (segment retention period).
+    long fetchTime = row.getFetchTime(); 
+    if (fetchTime - curTime > maxInterval * 1000L) {
+      row.setFetchInterval(Math.round(maxInterval * 0.9f));
+      row.setFetchTime(curTime);
+    }
+    return fetchTime <= curTime;
+  }
   
   /**
    * This method resets fetchTime, fetchInterval, modifiedTime,

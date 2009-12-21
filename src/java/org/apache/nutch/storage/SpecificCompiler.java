@@ -193,7 +193,7 @@ public class SpecificCompiler {
       switch (schema.getType()) {
       case RECORD:
         line(0, "public class "+type(schema)
-             +" extends NutchTableRowInternal implements SpecificRecord {");
+             +" extends NutchTableRowInternal {");
         // schema definition
         line(1, "public static final Schema _SCHEMA = Schema.parse(\""
              +esc(schema)+"\");");

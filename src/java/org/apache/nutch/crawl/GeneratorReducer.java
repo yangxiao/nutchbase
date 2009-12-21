@@ -3,13 +3,15 @@ package org.apache.nutch.crawl;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.nutch.crawl.Generator.SelectorEntry;
-import org.apache.nutch.util.hbase.OldWebTableRow;
+import org.apache.nutch.fetcher.Fetcher.FetcherMapper;
+import org.apache.nutch.storage.Mark;
+import org.apache.nutch.storage.WebTableRow;
+import org.apache.nutch.storage.mapreduce.RowReducer;
+import org.apache.nutch.util.hbase.TableUtil;
 
 /** Reduce class for generate
  * 
@@ -18,18 +20,18 @@ import org.apache.nutch.util.hbase.OldWebTableRow;
  *
  */
 public class GeneratorReducer
-extends TableReducer<SelectorEntry, OldWebTableRow, SelectorEntry> {
+extends RowReducer<SelectorEntry, WebTableRow, String, WebTableRow> {
 
   private long limit;
   private long maxPerHost;
   private long count = 0;
   private Map<String, Integer> hostCountMap = new HashMap<String, Integer>();
-  private Random random = new Random();
+  private byte[] crawlIdRaw;
 
   @Override
-  protected void reduce(SelectorEntry key, Iterable<OldWebTableRow> values,
+  protected void reduce(SelectorEntry key, Iterable<WebTableRow> values,
       Context context) throws IOException, InterruptedException {
-    for (OldWebTableRow row : values) {
+    for (WebTableRow row : values) {
       if (maxPerHost > 0) {
         String host = key.host;
         Integer hostCount = hostCountMap.get(host);
@@ -46,8 +48,8 @@ extends TableReducer<SelectorEntry, OldWebTableRow, SelectorEntry> {
         return;
       }
       
-      row.putMeta(Generator.GENERATOR_MARK, Bytes.toBytes(random.nextInt()));
-      row.makeRowMutation().writeToContext(key, context);
+      Mark.GENERATE_MARK.putMark(row, crawlIdRaw);
+      context.write(TableUtil.reverseUrl(key.url), row);
       count++;
     }
   }
@@ -63,6 +65,7 @@ extends TableReducer<SelectorEntry, OldWebTableRow, SelectorEntry> {
       limit = totalLimit / context.getNumReduceTasks();
     }
     maxPerHost = conf.getLong(Generator.GENERATE_MAX_PER_HOST, -1);
+    crawlIdRaw = Bytes.toBytes(conf.get(Generator.CRAWL_ID));
   }
   
 }

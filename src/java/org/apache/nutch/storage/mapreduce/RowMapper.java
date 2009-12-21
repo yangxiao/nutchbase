@@ -1,15 +1,17 @@
 package org.apache.nutch.storage.mapreduce;
 
+import java.util.Collection;
+
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.nutch.storage.NutchTableRow;
 
-public class RowMapper<K, R extends NutchTableRow>
-extends Mapper<K, R, K, R> {
+public class RowMapper<K1, V1 extends NutchTableRow, K2, V2>
+extends Mapper<K1, V1, K2, V2> {
 
-  public static <K, R extends NutchTableRow> void initRowMapperJob(Job job,
-      Class<K> keyClass, Class<R> valueClass,
-      Class<? extends RowMapper<K, R>> mapperClass, String... fields) {
+  public static <K1, V1 extends NutchTableRow, K2, V2>
+  void initRowMapperJob(Job job,Class<K2> keyClass, Class<V2> valueClass,
+      Class<? extends RowMapper<K1, V1, K2, V2>> mapperClass, String... fields) {
     job.setInputFormatClass(RowInputFormat.class);
     job.setMapperClass(mapperClass);
     job.setMapOutputKeyClass(keyClass);
@@ -19,5 +21,13 @@ extends Mapper<K, R, K, R> {
         "org.apache.hadoop.io.serializer.WritableSerialization",
         StringSerialization.class.getCanonicalName(),
         NutchTableRowSerialization.class.getCanonicalName());
+  }
+  
+  public static <K1, V1 extends NutchTableRow, K2, V2>
+  void initRowMapperJob(Job job,Class<K2> keyClass, Class<V2> valueClass,
+      Class<? extends RowMapper<K1, V1, K2, V2>> mapperClass,
+      Collection<String> fields) {
+    initRowMapperJob(job, keyClass, valueClass, mapperClass,
+        fields.toArray(new String[fields.size()]));
   }
 }
