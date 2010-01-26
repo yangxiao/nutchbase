@@ -198,9 +198,9 @@ fi
 if [ "$COMMAND" = "crawl" ] ; then
   CLASS=org.apache.nutch.crawl.Crawl
 elif [ "$COMMAND" = "createtable" ] ; then
-  CLASS=org.apache.nutch.util.hbase.WebTableCreator
+  CLASS=org.apache.nutch.storage.WebTableUtils
 elif [ "$COMMAND" = "inject" ] ; then
-  CLASS=org.apache.nutch.crawl.Injector
+  CLASS=org.apache.nutch.crawl.Injector2
 elif [ "$COMMAND" = "generate" ] ; then
   CLASS=org.apache.nutch.crawl.Generator
 #elif [ "$COMMAND" = "freegen" ] ; then
